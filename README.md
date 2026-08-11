@@ -1,4 +1,4 @@
-# 🚀 SMD-MINI
+# 🚀 SMD COOLGUY BOT
 ### A Powerful WhatsApp Bot  
 > Created with ❤️ by **Team-Bandaheali**
 
