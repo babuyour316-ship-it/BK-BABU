@@ -3,7 +3,7 @@
 > Created with ❤️ by **BK BABU**
 
 <p align="center">
-<img src="https://bandaheali-cdn.koyeb.app/bandaheali/smd.jpg" alt="SMD-MINI" width="500">
+<img src="https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png" alt="BK BABU BOT" width="500">
 </p>
 
 <p align="center">
