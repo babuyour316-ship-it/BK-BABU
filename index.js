@@ -1,5 +1,7 @@
 const express = require("express");
 const fs = require("fs");
+const path = require("path");
+const P = require("pino");
 
 const {
   default: makeWASocket,
@@ -9,18 +11,31 @@ const {
   fetchLatestBaileysVersion
 } = require("@whiskeysockets/baileys");
 
-const P = require("pino");
-
 const app = express();
 const PORT = process.env.PORT || 9090;
 
-const AUTH_DIR = "./auth_info_baileys";
+const AUTH_DIR = path.join(__dirname, "auth_info_baileys");
 
-const OWNER_NUMBER = (process.env.OWNER_NUMBER || "").replace(/\D/g, "");
+const OWNER_NUMBER = String(
+  process.env.OWNER_NUMBER || ""
+).replace(/\D/g, "");
+
+const BOT_NAME =
+  process.env.BOT_NAME || "BK-BABU";
+
+const OWNER_NAME =
+  process.env.OWNER_NAME || "BK BABU";
+
+const PREFIX =
+  process.env.PREFIX || ".";
+
+const MENU_IMG =
+  process.env.MENU_IMG ||
+  "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png";
 
 let sock = null;
-let pairingReady = false;
 let pairingInProgress = false;
+let pairingReady = false;
 let pairingReadyResolve = null;
 
 let pairingReadyPromise = new Promise((resolve) => {
@@ -29,278 +44,156 @@ let pairingReadyPromise = new Promise((resolve) => {
 
 app.use(express.json());
 
-
 /* =========================================================
-   BK BABU WEBSITE
+   WEBSITE
    ========================================================= */
 
 app.get("/", (req, res) => {
   res.send(`
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>BK BABU BOT</title>
 
 <style>
 
 *{
-box-sizing:border-box;
-margin:0;
-padding:0;
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
 
 body{
-
-min-height:100vh;
-
-font-family:
-Arial,
-Helvetica,
-sans-serif;
-
-background:
-radial-gradient(
-circle at top,
-#263b72 0%,
-#111827 45%,
-#05070c 100%
-);
-
-color:#fff;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-padding:20px;
-
+  min-height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    radial-gradient(circle at top,#263b72 0%,#111827 45%,#05070c 100%);
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
 }
 
 .card{
-
-width:100%;
-
-max-width:430px;
-
-background:
-rgba(15,20,34,.95);
-
-border:
-1px solid rgba(255,255,255,.12);
-
-border-radius:26px;
-
-padding:30px 22px;
-
-text-align:center;
-
-box-shadow:
-0 25px 80px rgba(0,0,0,.55);
-
+  width:100%;
+  max-width:430px;
+  background:rgba(15,20,34,.96);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:26px;
+  padding:30px 22px;
+  text-align:center;
+  box-shadow:0 25px 80px rgba(0,0,0,.55);
 }
 
 .logo{
-
-width:85px;
-
-height:85px;
-
-border-radius:22px;
-
-object-fit:cover;
-
-margin-bottom:15px;
-
-border:
-2px solid rgba(255,255,255,.18);
-
+  width:88px;
+  height:88px;
+  border-radius:22px;
+  object-fit:cover;
+  margin-bottom:15px;
+  border:2px solid rgba(255,255,255,.18);
 }
 
 h1{
-
-font-size:28px;
-
-margin-bottom:8px;
-
+  font-size:28px;
+  margin-bottom:8px;
 }
 
 .subtitle{
-
-color:#aeb8cc;
-
-font-size:14px;
-
-margin-bottom:27px;
-
+  color:#aeb8cc;
+  font-size:14px;
+  margin-bottom:27px;
 }
 
 .label{
-
-text-align:left;
-
-color:#bac4d8;
-
-font-size:13px;
-
-margin-bottom:8px;
-
+  text-align:left;
+  color:#bac4d8;
+  font-size:13px;
+  margin-bottom:8px;
 }
 
 input{
-
-width:100%;
-
-padding:16px;
-
-border-radius:14px;
-
-border:
-1px solid rgba(255,255,255,.12);
-
-background:#0b101b;
-
-color:white;
-
-font-size:16px;
-
-outline:none;
-
-margin-bottom:15px;
-
+  width:100%;
+  padding:16px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#0b101b;
+  color:white;
+  font-size:16px;
+  outline:none;
+  margin-bottom:15px;
 }
 
 button{
-
-width:100%;
-
-padding:16px;
-
-border:0;
-
-border-radius:14px;
-
-background:
-linear-gradient(
-135deg,
-#586cff,
-#8b5cf6
-);
-
-color:white;
-
-font-size:16px;
-
-font-weight:bold;
-
-cursor:pointer;
-
+  width:100%;
+  padding:16px;
+  border:0;
+  border-radius:14px;
+  background:linear-gradient(135deg,#586cff,#8b5cf6);
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 button:disabled{
-
-opacity:.55;
-
+  opacity:.55;
 }
 
 .codeBox{
-
-display:none;
-
-margin-top:22px;
-
-padding:20px;
-
-border-radius:17px;
-
-background:#080d17;
-
-border:
-1px solid rgba(255,255,255,.1);
-
+  display:none;
+  margin-top:22px;
+  padding:20px;
+  border-radius:17px;
+  background:#080d17;
+  border:1px solid rgba(255,255,255,.1);
 }
 
 .codeTitle{
-
-color:#aeb8cc;
-
-font-size:13px;
-
-margin-bottom:10px;
-
+  color:#aeb8cc;
+  font-size:13px;
+  margin-bottom:10px;
 }
 
 .code{
-
-font-size:28px;
-
-font-weight:bold;
-
-letter-spacing:4px;
-
-margin-bottom:15px;
-
+  font-size:28px;
+  font-weight:bold;
+  letter-spacing:4px;
+  margin-bottom:15px;
 }
 
 .copy{
-
-background:#202a42;
-
+  background:#202a42;
 }
 
 .message{
-
-margin-top:16px;
-
-color:#9da9bd;
-
-font-size:13px;
-
-line-height:1.5;
-
+  margin-top:16px;
+  color:#9da9bd;
+  font-size:13px;
+  line-height:1.5;
 }
 
 .steps{
-
-margin-top:22px;
-
-padding-top:20px;
-
-border-top:
-1px solid rgba(255,255,255,.08);
-
-text-align:left;
-
-color:#aeb8cc;
-
-font-size:13px;
-
-line-height:1.8;
-
+  margin-top:22px;
+  padding-top:20px;
+  border-top:1px solid rgba(255,255,255,.08);
+  text-align:left;
+  color:#aeb8cc;
+  font-size:13px;
+  line-height:1.8;
 }
 
 .footer{
-
-margin-top:22px;
-
-font-size:11px;
-
-color:#68758d;
-
+  margin-top:22px;
+  font-size:11px;
+  color:#68758d;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -309,10 +202,10 @@ color:#68758d;
 
 <img
 class="logo"
-src="https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png"
+src="${MENU_IMG}"
 >
 
-<h1>🤖 BK BABU BOT</h1>
+<h1>🤖 ${BOT_NAME}</h1>
 
 <div class="subtitle">
 WhatsApp Pairing Portal
@@ -373,21 +266,16 @@ Enter your WhatsApp number.
 <b>📱 How to connect</b><br>
 
 1. Enter your WhatsApp number.<br>
-
 2. Tap GET PAIRING CODE.<br>
-
 3. Copy the code.<br>
-
 4. WhatsApp → Linked Devices.<br>
-
 5. Link a device → Link with phone number instead.<br>
-
 6. Enter the code.
 
 </div>
 
 <div class="footer">
-⚡ POWERED BY BK BABU
+⚡ POWERED BY ${OWNER_NAME}
 </div>
 
 </div>
@@ -396,136 +284,101 @@ Enter your WhatsApp number.
 
 async function pair(){
 
-const input =
-document.getElementById("number");
+  const input =
+    document.getElementById("number");
 
-const button =
-document.getElementById("pairButton");
+  const button =
+    document.getElementById("pairButton");
 
-const message =
-document.getElementById("message");
+  const message =
+    document.getElementById("message");
 
-const box =
-document.getElementById("codeBox");
+  const box =
+    document.getElementById("codeBox");
 
-const code =
-document.getElementById("code");
+  const code =
+    document.getElementById("code");
 
-const number =
-input.value.replace(/\\D/g,"");
+  const number =
+    input.value.replace(/\\D/g,"");
 
-if(!number){
+  if(!number){
+    message.innerText =
+      "❌ Enter your WhatsApp number.";
+    return;
+  }
 
-message.innerText =
-"❌ Enter your WhatsApp number.";
+  if(number.length < 10){
+    message.innerText =
+      "❌ Enter a valid WhatsApp number.";
+    return;
+  }
 
-return;
+  button.disabled = true;
+  button.innerText = "⏳ GENERATING...";
+  box.style.display = "none";
 
+  message.innerText =
+    "🔄 Connecting to WhatsApp...";
+
+  try{
+
+    const response =
+      await fetch("/api/pair",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          number:number
+        })
+      });
+
+    const data =
+      await response.json();
+
+    if(!response.ok){
+      throw new Error(
+        data.error || "Pairing failed"
+      );
+    }
+
+    code.innerText = data.code;
+    box.style.display = "block";
+
+    message.innerText =
+      "✅ Code generated. Copy it to WhatsApp.";
+
+  }catch(error){
+
+    message.innerText =
+      "❌ " + error.message;
+
+  }
+
+  button.disabled = false;
+  button.innerText =
+    "🔐 GET PAIRING CODE";
 }
-
-if(number.length < 10){
-
-message.innerText =
-"❌ Enter a valid WhatsApp number.";
-
-return;
-
-}
-
-button.disabled = true;
-
-button.innerText =
-"⏳ GENERATING...";
-
-box.style.display =
-"none";
-
-message.innerText =
-"🔄 Connecting to WhatsApp...";
-
-try{
-
-const response =
-await fetch(
-"/api/pair",
-{
-
-method:"POST",
-
-headers:{
-"Content-Type":
-"application/json"
-},
-
-body:JSON.stringify({
-number:number
-})
-
-}
-);
-
-const data =
-await response.json();
-
-if(!response.ok){
-
-throw new Error(
-data.error ||
-"Pairing failed"
-);
-
-}
-
-code.innerText =
-data.code;
-
-box.style.display =
-"block";
-
-message.innerText =
-"✅ Code generated. Copy it to WhatsApp.";
-
-}catch(error){
-
-message.innerText =
-"❌ " + error.message;
-
-}
-
-button.disabled = false;
-
-button.innerText =
-"🔐 GET PAIRING CODE";
-
-}
-
 
 async function copyCode(){
 
-const code =
-document
-.getElementById("code")
-.innerText;
+  const code =
+    document.getElementById("code").innerText;
 
-try{
+  try{
 
-await navigator
-.clipboard
-.writeText(code);
+    await navigator.clipboard.writeText(code);
 
-document
-.getElementById("message")
-.innerText =
-"✅ Pairing code copied!";
+    document.getElementById("message").innerText =
+      "✅ Pairing code copied!";
 
-}catch(error){
+  }catch(error){
 
-document
-.getElementById("message")
-.innerText =
-"❌ Copy failed.";
+    document.getElementById("message").innerText =
+      "❌ Copy failed.";
 
-}
+  }
 
 }
 
@@ -544,17 +397,10 @@ document
 app.get("/status", (req, res) => {
 
   res.json({
-
-    bot: "BK BABU BOT",
-
-    status:
-      sock ? "running" : "starting",
-
-    whatsapp:
-      sock ? "connected-or-connecting" : "offline",
-
+    bot: BOT_NAME,
+    status: sock ? "running" : "starting",
+    whatsapp: sock ? "connected-or-connecting" : "offline",
     pairingReady
-
   });
 
 });
@@ -566,106 +412,73 @@ app.get("/status", (req, res) => {
 
 app.post("/api/pair", async (req, res) => {
 
-  try {
+  try{
 
     const number =
-      String(
-        req.body.number || ""
-      ).replace(/\D/g, "");
+      String(req.body.number || "")
+        .replace(/\D/g,"");
 
-    if (!number) {
+    if(!number){
 
       return res.status(400).json({
-
-        error:
-          "WhatsApp number is required."
-
+        error:"WhatsApp number is required."
       });
 
     }
 
-
-    /*
-     * Only the number configured
-     * in Render OWNER_NUMBER
-     * can request a pairing code.
-     */
-
-    if (
+    if(
       !OWNER_NUMBER ||
       number !== OWNER_NUMBER
-    ) {
+    ){
 
       return res.status(403).json({
-
         error:
           "This pairing page is configured for the bot owner number only."
-
       });
 
     }
 
-
-    if (pairingInProgress) {
+    if(pairingInProgress){
 
       return res.status(429).json({
-
         error:
           "A pairing request is already running. Please wait."
-
       });
 
     }
 
-
-    if (
-      sock &&
-      sock.user
-    ) {
+    if(sock && sock.user){
 
       return res.status(400).json({
-
         error:
           "BK BABU BOT is already linked to WhatsApp."
-
       });
 
     }
 
-
     pairingInProgress = true;
-
 
     await Promise.race([
 
       pairingReadyPromise,
 
-      new Promise(
-        (_, reject) => {
+      new Promise((_,reject)=>{
 
-          setTimeout(
-            () => {
+        setTimeout(()=>{
 
-              reject(
-                new Error(
-                  "WhatsApp pairing service is not ready yet."
-                )
-              );
-
-            },
-            60000
+          reject(
+            new Error(
+              "WhatsApp pairing service is not ready yet."
+            )
           );
 
-        }
-      )
+        },60000);
+
+      })
 
     ]);
 
-
-    if (
-      !sock ||
-      !pairingReady
-    ) {
+    if(!sock || !pairingReady){
 
       throw new Error(
         "WhatsApp pairing service is not ready."
@@ -673,36 +486,26 @@ app.post("/api/pair", async (req, res) => {
 
     }
 
-
     const code =
-      await sock.requestPairingCode(
-        number
-      );
-
+      await sock.requestPairingCode(number);
 
     const formatted =
       String(code)
-        .replace(/\s/g, "")
+        .replace(/\s/g,"")
         .match(/.{1,4}/g)
         ?.join("-") ||
       String(code);
-
 
     console.log(
       "🔐 Pairing code generated from website."
     );
 
-
     res.json({
-
       success:true,
-
       code:formatted
-
     });
 
-
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "❌ Pairing Error:",
@@ -710,14 +513,12 @@ app.post("/api/pair", async (req, res) => {
     );
 
     res.status(500).json({
-
       error:
         error.message ||
         "Pairing failed."
-
     });
 
-  } finally {
+  }finally{
 
     pairingInProgress = false;
 
@@ -733,12 +534,10 @@ app.post("/api/pair", async (req, res) => {
 app.listen(
   PORT,
   "0.0.0.0",
-  () => {
-
+  ()=>{
     console.log(
-      `🌐 BK BABU website running on port ${PORT}`
+      "🌐 BK BABU website running on port " + PORT
     );
-
   }
 );
 
@@ -754,15 +553,9 @@ async function startBot(){
     pairingReady = false;
 
     pairingReadyPromise =
-      new Promise(
-        (resolve) => {
-
-          pairingReadyResolve =
-            resolve;
-
-        }
-      );
-
+      new Promise((resolve)=>{
+        pairingReadyResolve = resolve;
+      });
 
     const {
       state,
@@ -772,22 +565,21 @@ async function startBot(){
         AUTH_DIR
       );
 
-
     const {
       version,
       isLatest
     } =
       await fetchLatestBaileysVersion();
 
-
     console.log(
-      `🌐 WhatsApp version: ${version.join(".")}`
+      "🌐 WhatsApp version:",
+      version.join(".")
     );
 
     console.log(
-      `📌 Latest: ${isLatest}`
+      "📌 Latest:",
+      isLatest
     );
-
 
     sock =
       makeWASocket({
@@ -801,14 +593,20 @@ async function startBot(){
             level:"silent"
           }),
 
+        /*
+         * Use a normal browser profile.
+         * Avoid custom browser labels for
+         * pairing-code compatibility.
+         */
+
         browser:
-          Browsers.ubuntu(
-            "BK-BABU"
-          ),
+          Browsers.macOS("Chrome"),
 
         markOnlineOnConnect:false,
 
-        connectTimeoutMs:60000
+        connectTimeoutMs:60000,
+
+        defaultQueryTimeoutMs:60000
 
       });
 
@@ -819,9 +617,13 @@ async function startBot(){
     );
 
 
+    /* =====================================================
+       CONNECTION
+       ===================================================== */
+
     sock.ev.on(
       "connection.update",
-      async (update) => {
+      async(update)=>{
 
         const {
           connection,
@@ -830,13 +632,16 @@ async function startBot(){
         } = update;
 
 
+        /*
+         * QR event means the socket is ready
+         * enough for pairing-code requests.
+         */
+
         if(qr){
 
           pairingReady = true;
 
-          if(
-            pairingReadyResolve
-          ){
+          if(pairingReadyResolve){
 
             pairingReadyResolve(true);
 
@@ -851,10 +656,7 @@ async function startBot(){
         }
 
 
-        if(
-          connection ===
-          "connecting"
-        ){
+        if(connection === "connecting"){
 
           console.log(
             "🔄 BK BABU connecting..."
@@ -863,10 +665,7 @@ async function startBot(){
         }
 
 
-        if(
-          connection ===
-          "open"
-        ){
+        if(connection === "open"){
 
           pairingReady = false;
 
@@ -885,10 +684,7 @@ async function startBot(){
         }
 
 
-        if(
-          connection ===
-          "close"
-        ){
+        if(connection === "close"){
 
           const statusCode =
             lastDisconnect
@@ -896,15 +692,12 @@ async function startBot(){
               ?.output
               ?.statusCode;
 
-
           console.log(
             "❌ WhatsApp connection closed:",
             statusCode
           );
 
-
           sock = null;
-
           pairingReady = false;
 
 
@@ -922,14 +715,9 @@ async function startBot(){
           }
 
 
-          setTimeout(
-            () => {
-
-              startBot();
-
-            },
-            5000
-          );
+          setTimeout(()=>{
+            startBot();
+          },5000);
 
         }
 
@@ -943,283 +731,294 @@ async function startBot(){
 
     sock.ev.on(
       "messages.upsert",
-      async ({
-        messages
-      }) => {
+      async({messages})=>{
 
         try{
 
-          const msg =
-            messages[0];
+          for(const msg of messages){
+
+            if(
+              !msg ||
+              !msg.message
+            ){
+              continue;
+            }
+
+            const jid =
+              msg.key.remoteJid;
+
+            if(!jid){
+              continue;
+            }
 
 
-          if(
-            !msg ||
-            !msg.message
-          ){
+            /*
+             * Ignore status broadcasts.
+             */
 
-            return;
-
-          }
-
-
-          /*
-           * IMPORTANT:
-           *
-           * We DO NOT use:
-           *
-           * if(msg.key.fromMe) return;
-           *
-           * because we want commands typed
-           * from the bot owner's own WhatsApp
-           * profile/self-chat to work.
-           *
-           * Bot replies are not processed as
-           * commands because they do not contain
-           * a valid command prefix.
-           */
+            if(
+              jid === "status@broadcast"
+            ){
+              continue;
+            }
 
 
-          const jid =
-            msg.key.remoteJid;
+            const text =
+              msg.message.conversation ||
+
+              msg.message.extendedTextMessage
+                ?.text ||
+
+              msg.message.imageMessage
+                ?.caption ||
+
+              msg.message.videoMessage
+                ?.caption ||
+
+              "";
 
 
-          if(!jid){
+            const cleanText =
+              String(text).trim();
 
-            return;
-
-          }
-
-
-          const text =
-            msg.message.conversation ||
-
-            msg.message.extendedTextMessage
-              ?.text ||
-
-            msg.message.imageMessage
-              ?.caption ||
-
-            msg.message.videoMessage
-              ?.caption ||
-
-            "";
+            if(!cleanText){
+              continue;
+            }
 
 
-          const command =
-            text
-              .trim()
-              .toLowerCase();
+            const command =
+              cleanText.toLowerCase();
 
 
-          if(!command){
-
-            return;
-
-          }
-
-
-          console.log(
-            `📩 Message received: ${command}`
-          );
-
-
-          /* =================================================
-             PING
-             ================================================= */
-
-          if(
-            command ===
-            ".ping"
-          ){
-
-            await sock.sendMessage(
-              jid,
-              {
-
-                text:
-                  "🏓 *PONG!*\n\n" +
-
-                  "🤖 BK BABU BOT is online.\n" +
-
-                  "⚡ System is working."
-
-              }
+            console.log(
+              "📩 Message:",
+              cleanText
             );
 
-            return;
 
-          }
+            /* =================================================
+               MENU
+               ================================================= */
 
+            if(
+              command ===
+              `${PREFIX}menu`
+            ){
 
-          /* =================================================
-             MENU
-             ================================================= */
+              const menuText =
 
-          if(
-            command ===
-            ".menu"
-          ){
+`╭━━━〔 🤖 ${BOT_NAME} 〕━━━╮
+┃
+┃ 👑 Owner : ${OWNER_NAME}
+┃ ⚡ Prefix : ${PREFIX}
+┃ 📡 Status : Online
+┃
+┣━━〔 📋 MAIN 〕━━
+┃
+┃ ${PREFIX}menu
+┃ ${PREFIX}ping
+┃ ${PREFIX}alive
+┃ ${PREFIX}about
+┃ ${PREFIX}owner
+┃ ${PREFIX}help
+┃
+┣━━〔 🎵 MUSIC 〕━━
+┃
+┃ Music features will be added
+┃ to this section.
+┃
+┣━━〔 👥 GROUP 〕━━
+┃
+┃ Group features will be added
+┃ to this section.
+┃
+┣━━〔 📊 STATUS 〕━━
+┃
+┃ Status features will be added
+┃ to this section.
+┃
+┣━━〔 🛠️ TOOLS 〕━━
+┃
+┃ Tool features will be added
+┃ to this section.
+┃
+╰━━━━━━━━━━━━━━━━━━━━━━╯
 
-            await sock.sendMessage(
-              jid,
-              {
-
-                text:
-
-                  "╭━━━〔 🤖 BK BABU BOT 〕━━━╮\n" +
-
-                  "┃\n" +
-
-                  "┃ 🏓 .ping\n" +
-
-                  "┃ 📋 .menu\n" +
-
-                  "┃ ℹ️ .about\n" +
-
-                  "┃ ❤️ .alive\n" +
-
-                  "┃ 👑 .owner\n" +
-
-                  "┃ 🆘 .help\n" +
-
-                  "┃\n" +
-
-                  "╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n" +
-
-                  "⚡ POWERED BY BK BABU"
-
-              }
-            );
-
-            return;
-
-          }
-
-
-          /* =================================================
-             ABOUT
-             ================================================= */
-
-          if(
-            command ===
-            ".about"
-          ){
-
-            await sock.sendMessage(
-              jid,
-              {
-
-                text:
-
-                  "🤖 *BK BABU BOT*\n\n" +
-
-                  "⚡ WhatsApp Bot powered by Baileys\n" +
-
-                  "👑 Owner: BK BABU\n" +
-
-                  "🚀 Status: Online"
-
-              }
-            );
-
-            return;
-
-          }
+⚡ POWERED BY ${OWNER_NAME}`;
 
 
-          /* =================================================
-             ALIVE
-             ================================================= */
+              /*
+               * Send menu image first.
+               */
 
-          if(
-            command ===
-            ".alive"
-          ){
+              try{
 
-            await sock.sendMessage(
-              jid,
-              {
+                await sock.sendMessage(
+                  jid,
+                  {
+                    image:{
+                      url:MENU_IMG
+                    },
+                    caption:menuText
+                  }
+                );
 
-                text:
-                  "❤️ *BK BABU BOT IS ALIVE!*\n\n" +
+              }catch(imageError){
 
-                  "🟢 Online\n" +
+                console.log(
+                  "⚠️ Menu image failed, sending text menu."
+                );
 
-                  "⚡ Ready\n" +
-
-                  "🤖 Powered by BK BABU"
+                await sock.sendMessage(
+                  jid,
+                  {
+                    text:menuText
+                  }
+                );
 
               }
-            );
 
-            return;
+              continue;
+
+            }
+
+
+            /* =================================================
+               PING
+               ================================================= */
+
+            if(
+              command ===
+              `${PREFIX}ping`
+            ){
+
+              await sock.sendMessage(
+                jid,
+                {
+                  text:
+`🏓 *PONG!*
+
+🤖 ${BOT_NAME}
+🟢 Status: Online
+⚡ System: Working`
+                }
+              );
+
+              continue;
+
+            }
+
+
+            /* =================================================
+               ALIVE
+               ================================================= */
+
+            if(
+              command ===
+              `${PREFIX}alive`
+            ){
+
+              await sock.sendMessage(
+                jid,
+                {
+                  text:
+`❤️ *${BOT_NAME} IS ALIVE!*
+
+🟢 Online
+⚡ Ready
+🤖 Powered by ${OWNER_NAME}`
+                }
+              );
+
+              continue;
+
+            }
+
+
+            /* =================================================
+               ABOUT
+               ================================================= */
+
+            if(
+              command ===
+              `${PREFIX}about`
+            ){
+
+              await sock.sendMessage(
+                jid,
+                {
+                  text:
+`🤖 *${BOT_NAME}*
+
+⚡ WhatsApp Bot powered by Baileys
+👑 Owner: ${OWNER_NAME}
+📡 Status: Online
+⚙️ Prefix: ${PREFIX}`
+                }
+              );
+
+              continue;
+
+            }
+
+
+            /* =================================================
+               OWNER
+               ================================================= */
+
+            if(
+              command ===
+              `${PREFIX}owner`
+            ){
+
+              await sock.sendMessage(
+                jid,
+                {
+                  text:
+`👑 *OWNER*
+
+${OWNER_NAME}
+
+🤖 ${BOT_NAME}`
+                }
+              );
+
+              continue;
+
+            }
+
+
+            /* =================================================
+               HELP
+               ================================================= */
+
+            if(
+              command ===
+              `${PREFIX}help`
+            ){
+
+              await sock.sendMessage(
+                jid,
+                {
+                  text:
+`🆘 *${BOT_NAME} HELP*
+
+📋 ${PREFIX}menu
+🏓 ${PREFIX}ping
+❤️ ${PREFIX}alive
+ℹ️ ${PREFIX}about
+👑 ${PREFIX}owner
+🆘 ${PREFIX}help
+
+⚡ POWERED BY ${OWNER_NAME}`
+                }
+              );
+
+              continue;
+
+            }
 
           }
-
-
-          /* =================================================
-             OWNER
-             ================================================= */
-
-          if(
-            command ===
-            ".owner"
-          ){
-
-            await sock.sendMessage(
-              jid,
-              {
-
-                text:
-                  "👑 *BK BABU*\n\n" +
-
-                  "🤖 BK BABU BOT"
-
-              }
-            );
-
-            return;
-
-          }
-
-
-          /* =================================================
-             HELP
-             ================================================= */
-
-          if(
-            command ===
-            ".help"
-          ){
-
-            await sock.sendMessage(
-              jid,
-              {
-
-                text:
-
-                  "🆘 *BK BABU HELP*\n\n" +
-
-                  "🏓 .ping — Check bot\n" +
-
-                  "📋 .menu — Show menu\n" +
-
-                  "ℹ️ .about — About bot\n" +
-
-                  "❤️ .alive — Bot status\n" +
-
-                  "👑 .owner — Owner info\n\n" +
-
-                  "⚡ POWERED BY BK BABU"
-
-              }
-            );
-
-            return;
-
-          }
-
 
         }catch(error){
 
@@ -1241,17 +1040,11 @@ async function startBot(){
       error.message
     );
 
-
     sock = null;
 
-    setTimeout(
-      () => {
-
-        startBot();
-
-      },
-      10000
-    );
+    setTimeout(()=>{
+      startBot();
+    },10000);
 
   }
 
@@ -1259,7 +1052,7 @@ async function startBot(){
 
 
 /* =========================================================
-   START BOT
+   START
    ========================================================= */
 
 startBot();
