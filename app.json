@@ -1,13 +1,12 @@
 {
-  "name": "SMD-MiNi",
-  "description": "Javascript WhatsApp bot powered by Team-Bandaheali",
-  "logo": "https://bandaheali-cdn.koyeb.app/bandaheali/smd.jpg",
+  "name": "BK-BABU",
+  "description": "BK BABU WhatsApp Bot powered by Baileys",
+  "logo": "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png",
   "keywords": [
-    "SMD-MiNi",
-    "Bandaheali",
-    "Team-Bandaheali",
+    "BK-BABU",
+    "BK-BABU-BOT",
     "WhatsApp Bot",
-    "Baileys Bot",
+    "Baileys",
     "Nodejs Bot"
   ],
   "success_url": "/",
@@ -15,13 +14,13 @@
 
   "env": {
     "DATABASE_URL": {
-      "description": "Paste your MongoDB OR PostgreSQL connection string here. Example: mongodb+srv://... (MongoDB) OR postgresql://... (PostgreSQL / Supabase). If left empty, bot will automatically use local memory database.",
+      "description": "MongoDB or PostgreSQL database URL",
       "required": false
     },
 
     "OWNER_NUMBER": {
-      "description": "Bot owner WhatsApp number without + sign",
-      "value": "923253617422",
+      "description": "Bot owner's WhatsApp number without + sign",
+      "value": "",
       "required": true
     },
 
@@ -33,48 +32,48 @@
 
     "BOT_NAME": {
       "description": "Bot display name",
-      "value": "Rashid",
+      "value": "BK-BABU",
       "required": false
     },
 
     "OWNER_NAME": {
       "description": "Bot owner name",
-      "value": "THE-DEVIL",
+      "value": "BK BABU",
       "required": false
     },
 
     "CAPTION": {
       "description": "Footer caption used in bot messages",
-      "value": "POWERED BY TEAM-BANDAHEALI",
+      "value": "POWERED BY BK BABU",
       "required": false
     },
 
     "STATUS_MSG": {
       "description": "Bot auto status message",
-      "value": "Hello From Team-Bandaheali",
+      "value": "Hello From BK BABU",
       "required": false
     },
 
     "NEWSLETTER_JID": {
-      "description": "WhatsApp newsletter/channel JID",
-      "value": "120363175375282051@newsletter",
+      "description": "WhatsApp newsletter or channel JID",
+      "value": "",
       "required": false
     },
 
     "MENU_IMG": {
       "description": "Menu image URL",
-      "value": "https://bandaheali-cdn.koyeb.app/bandaheali/smd.jpg",
+      "value": "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png",
       "required": false
     },
 
     "SITE_URL": {
       "description": "Pairing website URL",
-      "value": "https://smd-mini.vercel.app",
+      "value": "",
       "required": false
     },
 
     "PORT": {
-      "description": "Server port (optional)",
+      "description": "Server port",
       "required": false
     }
   },
