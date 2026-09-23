@@ -12,9 +12,18 @@ const {
 } = require("@whiskeysockets/baileys");
 
 const app = express();
+
 const PORT = process.env.PORT || 9090;
 
-const AUTH_DIR = path.join(__dirname, "auth_info_baileys");
+const AUTH_DIR = path.join(
+  __dirname,
+  "auth_info_baileys"
+);
+
+const SETTINGS_FILE = path.join(
+  __dirname,
+  "group-settings.json"
+);
 
 const OWNER_NUMBER = String(
   process.env.OWNER_NUMBER || ""
@@ -34,166 +43,402 @@ const MENU_IMG =
   "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png";
 
 let sock = null;
+
 let pairingInProgress = false;
 let pairingReady = false;
+
 let pairingReadyResolve = null;
 
-let pairingReadyPromise = new Promise((resolve) => {
-  pairingReadyResolve = resolve;
-});
+let pairingReadyPromise =
+  new Promise((resolve) => {
+    pairingReadyResolve = resolve;
+  });
 
-app.use(express.json());
+
+/* =========================================================
+   GROUP SETTINGS
+   ========================================================= */
+
+let groupSettings = {};
+
+function loadSettings() {
+
+  try {
+
+    if (
+      fs.existsSync(SETTINGS_FILE)
+    ) {
+
+      groupSettings =
+        JSON.parse(
+          fs.readFileSync(
+            SETTINGS_FILE,
+            "utf8"
+          )
+        );
+
+    }
+
+  } catch (error) {
+
+    console.log(
+      "⚠️ Settings load error:",
+      error.message
+    );
+
+    groupSettings = {};
+
+  }
+
+}
+
+
+function saveSettings() {
+
+  try {
+
+    fs.writeFileSync(
+      SETTINGS_FILE,
+      JSON.stringify(
+        groupSettings,
+        null,
+        2
+      )
+    );
+
+  } catch (error) {
+
+    console.log(
+      "⚠️ Settings save error:",
+      error.message
+    );
+
+  }
+
+}
+
+
+function getSettings(jid) {
+
+  if (!groupSettings[jid]) {
+
+    groupSettings[jid] = {
+
+      welcome: false,
+
+      goodbye: false,
+
+      antilink: false,
+
+      antimention: false,
+
+      autoreact: false,
+
+      autoread: false,
+
+      antispam: false
+
+    };
+
+  }
+
+  return groupSettings[jid];
+
+}
+
+
+loadSettings();
+
+
+/* =========================================================
+   EXPRESS
+   ========================================================= */
+
+app.use(
+  express.json()
+);
+
 
 /* =========================================================
    WEBSITE
    ========================================================= */
 
 app.get("/", (req, res) => {
-  res.send(`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>BK BABU BOT</title>
+  res.send(`
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0"
+>
+
+<title>${BOT_NAME} Pairing</title>
 
 <style>
 
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+box-sizing:border-box;
+margin:0;
+padding:0;
 }
 
 body{
-  min-height:100vh;
-  font-family:Arial,Helvetica,sans-serif;
-  background:
-    radial-gradient(circle at top,#263b72 0%,#111827 45%,#05070c 100%);
-  color:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
+
+min-height:100vh;
+
+font-family:
+Arial,
+Helvetica,
+sans-serif;
+
+background:
+radial-gradient(
+circle at top,
+#263b72 0%,
+#111827 45%,
+#05070c 100%
+);
+
+color:#fff;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+padding:20px;
+
 }
 
 .card{
-  width:100%;
-  max-width:430px;
-  background:rgba(15,20,34,.96);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:26px;
-  padding:30px 22px;
-  text-align:center;
-  box-shadow:0 25px 80px rgba(0,0,0,.55);
+
+width:100%;
+
+max-width:430px;
+
+background:
+rgba(15,20,34,.96);
+
+border:
+1px solid
+rgba(255,255,255,.12);
+
+border-radius:26px;
+
+padding:30px 22px;
+
+text-align:center;
+
+box-shadow:
+0 25px 80px
+rgba(0,0,0,.55);
+
 }
 
 .logo{
-  width:88px;
-  height:88px;
-  border-radius:22px;
-  object-fit:cover;
-  margin-bottom:15px;
-  border:2px solid rgba(255,255,255,.18);
+
+width:88px;
+
+height:88px;
+
+border-radius:22px;
+
+object-fit:cover;
+
+margin-bottom:15px;
+
+border:
+2px solid
+rgba(255,255,255,.18);
+
 }
 
 h1{
-  font-size:28px;
-  margin-bottom:8px;
+
+font-size:28px;
+
+margin-bottom:8px;
+
 }
 
 .subtitle{
-  color:#aeb8cc;
-  font-size:14px;
-  margin-bottom:27px;
+
+color:#aeb8cc;
+
+font-size:14px;
+
+margin-bottom:27px;
+
 }
 
 .label{
-  text-align:left;
-  color:#bac4d8;
-  font-size:13px;
-  margin-bottom:8px;
+
+text-align:left;
+
+color:#bac4d8;
+
+font-size:13px;
+
+margin-bottom:8px;
+
 }
 
 input{
-  width:100%;
-  padding:16px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.12);
-  background:#0b101b;
-  color:white;
-  font-size:16px;
-  outline:none;
-  margin-bottom:15px;
+
+width:100%;
+
+padding:16px;
+
+border-radius:14px;
+
+border:
+1px solid
+rgba(255,255,255,.12);
+
+background:#0b101b;
+
+color:white;
+
+font-size:16px;
+
+outline:none;
+
+margin-bottom:15px;
+
 }
 
 button{
-  width:100%;
-  padding:16px;
-  border:0;
-  border-radius:14px;
-  background:linear-gradient(135deg,#586cff,#8b5cf6);
-  color:white;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
+
+width:100%;
+
+padding:16px;
+
+border:0;
+
+border-radius:14px;
+
+background:
+linear-gradient(
+135deg,
+#586cff,
+#8b5cf6
+);
+
+color:white;
+
+font-size:16px;
+
+font-weight:bold;
+
+cursor:pointer;
+
 }
 
 button:disabled{
-  opacity:.55;
+
+opacity:.55;
+
 }
 
 .codeBox{
-  display:none;
-  margin-top:22px;
-  padding:20px;
-  border-radius:17px;
-  background:#080d17;
-  border:1px solid rgba(255,255,255,.1);
+
+display:none;
+
+margin-top:22px;
+
+padding:20px;
+
+border-radius:17px;
+
+background:#080d17;
+
+border:
+1px solid
+rgba(255,255,255,.1);
+
 }
 
 .codeTitle{
-  color:#aeb8cc;
-  font-size:13px;
-  margin-bottom:10px;
+
+color:#aeb8cc;
+
+font-size:13px;
+
+margin-bottom:10px;
+
 }
 
 .code{
-  font-size:28px;
-  font-weight:bold;
-  letter-spacing:4px;
-  margin-bottom:15px;
+
+font-size:28px;
+
+font-weight:bold;
+
+letter-spacing:4px;
+
+margin-bottom:15px;
+
 }
 
 .copy{
-  background:#202a42;
+
+background:#202a42;
+
 }
 
 .message{
-  margin-top:16px;
-  color:#9da9bd;
-  font-size:13px;
-  line-height:1.5;
+
+margin-top:16px;
+
+color:#9da9bd;
+
+font-size:13px;
+
+line-height:1.5;
+
 }
 
 .steps{
-  margin-top:22px;
-  padding-top:20px;
-  border-top:1px solid rgba(255,255,255,.08);
-  text-align:left;
-  color:#aeb8cc;
-  font-size:13px;
-  line-height:1.8;
+
+margin-top:22px;
+
+padding-top:20px;
+
+border-top:
+1px solid
+rgba(255,255,255,.08);
+
+text-align:left;
+
+color:#aeb8cc;
+
+font-size:13px;
+
+line-height:1.8;
+
 }
 
 .footer{
-  margin-top:22px;
-  font-size:11px;
-  color:#68758d;
+
+margin-top:22px;
+
+font-size:11px;
+
+color:#68758d;
+
 }
 
 </style>
+
 </head>
 
 <body>
@@ -266,127 +511,169 @@ Enter your WhatsApp number.
 <b>📱 How to connect</b><br>
 
 1. Enter your WhatsApp number.<br>
+
 2. Tap GET PAIRING CODE.<br>
+
 3. Copy the code.<br>
+
 4. WhatsApp → Linked Devices.<br>
+
 5. Link a device → Link with phone number instead.<br>
+
 6. Enter the code.
 
 </div>
 
 <div class="footer">
+
 ⚡ POWERED BY ${OWNER_NAME}
+
 </div>
 
 </div>
+
 
 <script>
 
 async function pair(){
 
-  const input =
-    document.getElementById("number");
+const input =
+document.getElementById("number");
 
-  const button =
-    document.getElementById("pairButton");
+const button =
+document.getElementById("pairButton");
 
-  const message =
-    document.getElementById("message");
+const message =
+document.getElementById("message");
 
-  const box =
-    document.getElementById("codeBox");
+const box =
+document.getElementById("codeBox");
 
-  const code =
-    document.getElementById("code");
+const code =
+document.getElementById("code");
 
-  const number =
-    input.value.replace(/\\D/g,"");
+const number =
+input.value.replace(/\\D/g,"");
 
-  if(!number){
-    message.innerText =
-      "❌ Enter your WhatsApp number.";
-    return;
-  }
+if(!number){
 
-  if(number.length < 10){
-    message.innerText =
-      "❌ Enter a valid WhatsApp number.";
-    return;
-  }
+message.innerText =
+"❌ Enter your WhatsApp number.";
 
-  button.disabled = true;
-  button.innerText = "⏳ GENERATING...";
-  box.style.display = "none";
+return;
 
-  message.innerText =
-    "🔄 Connecting to WhatsApp...";
-
-  try{
-
-    const response =
-      await fetch("/api/pair",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          number:number
-        })
-      });
-
-    const data =
-      await response.json();
-
-    if(!response.ok){
-      throw new Error(
-        data.error || "Pairing failed"
-      );
-    }
-
-    code.innerText = data.code;
-    box.style.display = "block";
-
-    message.innerText =
-      "✅ Code generated. Copy it to WhatsApp.";
-
-  }catch(error){
-
-    message.innerText =
-      "❌ " + error.message;
-
-  }
-
-  button.disabled = false;
-  button.innerText =
-    "🔐 GET PAIRING CODE";
 }
+
+if(number.length < 10){
+
+message.innerText =
+"❌ Enter a valid WhatsApp number.";
+
+return;
+
+}
+
+button.disabled = true;
+
+button.innerText =
+"⏳ GENERATING...";
+
+box.style.display =
+"none";
+
+message.innerText =
+"🔄 Connecting to WhatsApp...";
+
+try{
+
+const response =
+await fetch(
+"/api/pair",
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:JSON.stringify({
+number:number
+})
+
+});
+
+const data =
+await response.json();
+
+if(!response.ok){
+
+throw new Error(
+data.error ||
+"Pairing failed"
+);
+
+}
+
+code.innerText =
+data.code;
+
+box.style.display =
+"block";
+
+message.innerText =
+"✅ Code generated. Copy it to WhatsApp.";
+
+}catch(error){
+
+message.innerText =
+"❌ " + error.message;
+
+}
+
+button.disabled =
+false;
+
+button.innerText =
+"🔐 GET PAIRING CODE";
+
+}
+
 
 async function copyCode(){
 
-  const code =
-    document.getElementById("code").innerText;
+const code =
+document.getElementById("code").innerText;
 
-  try{
+try{
 
-    await navigator.clipboard.writeText(code);
+await navigator.clipboard.writeText(code);
 
-    document.getElementById("message").innerText =
-      "✅ Pairing code copied!";
+document.getElementById(
+"message"
+).innerText =
+"✅ Pairing code copied!";
 
-  }catch(error){
+}catch(error){
 
-    document.getElementById("message").innerText =
-      "❌ Copy failed.";
+document.getElementById(
+"message"
+).innerText =
+"❌ Copy failed.";
 
-  }
+}
 
 }
 
 </script>
 
 </body>
+
 </html>
+
 `);
+
 });
 
 
@@ -394,137 +681,185 @@ async function copyCode(){
    STATUS
    ========================================================= */
 
-app.get("/status", (req, res) => {
+app.get(
+  "/status",
+  (req, res) => {
 
-  res.json({
-    bot: BOT_NAME,
-    status: sock ? "running" : "starting",
-    whatsapp: sock ? "connected-or-connecting" : "offline",
-    pairingReady
-  });
+    res.json({
 
-});
+      bot: BOT_NAME,
+
+      status:
+        sock
+          ? "running"
+          : "starting",
+
+      whatsapp:
+        sock
+          ? "connected-or-connecting"
+          : "offline",
+
+      pairingReady
+
+    });
+
+  }
+);
 
 
 /* =========================================================
    PAIRING API
    ========================================================= */
 
-app.post("/api/pair", async (req, res) => {
+app.post(
+  "/api/pair",
+  async (req, res) => {
 
-  try{
+    try {
 
-    const number =
-      String(req.body.number || "")
-        .replace(/\D/g,"");
+      const number =
+        String(
+          req.body.number || ""
+        ).replace(/\D/g, "");
 
-    if(!number){
+      if (!number) {
 
-      return res.status(400).json({
-        error:"WhatsApp number is required."
-      });
+        return res.status(400).json({
+          error:
+            "WhatsApp number is required."
+        });
 
-    }
+      }
 
-    if(
-      !OWNER_NUMBER ||
-      number !== OWNER_NUMBER
-    ){
+      if (
+        !OWNER_NUMBER ||
+        number !== OWNER_NUMBER
+      ) {
 
-      return res.status(403).json({
-        error:
-          "This pairing page is configured for the bot owner number only."
-      });
+        return res.status(403).json({
 
-    }
+          error:
+            "This pairing page is configured for the bot owner number only."
 
-    if(pairingInProgress){
+        });
 
-      return res.status(429).json({
-        error:
-          "A pairing request is already running. Please wait."
-      });
+      }
 
-    }
+      if (pairingInProgress) {
 
-    if(sock && sock.user){
+        return res.status(429).json({
 
-      return res.status(400).json({
-        error:
-          "BK BABU BOT is already linked to WhatsApp."
-      });
+          error:
+            "A pairing request is already running. Please wait."
 
-    }
+        });
 
-    pairingInProgress = true;
+      }
 
-    await Promise.race([
+      if (sock && sock.user) {
 
-      pairingReadyPromise,
+        return res.status(400).json({
 
-      new Promise((_,reject)=>{
+          error:
+            "BK BABU BOT is already linked to WhatsApp."
 
-        setTimeout(()=>{
+        });
 
-          reject(
-            new Error(
-              "WhatsApp pairing service is not ready yet."
-            )
-          );
+      }
 
-        },60000);
+      pairingInProgress = true;
 
-      })
 
-    ]);
+      await Promise.race([
 
-    if(!sock || !pairingReady){
+        pairingReadyPromise,
 
-      throw new Error(
-        "WhatsApp pairing service is not ready."
+        new Promise(
+          (_, reject) => {
+
+            setTimeout(
+              () => {
+
+                reject(
+                  new Error(
+                    "WhatsApp pairing service is not ready yet."
+                  )
+                );
+
+              },
+              60000
+            );
+
+          }
+        )
+
+      ]);
+
+
+      if (
+        !sock ||
+        !pairingReady
+      ) {
+
+        throw new Error(
+          "WhatsApp pairing service is not ready."
+        );
+
+      }
+
+
+      const code =
+        await sock.requestPairingCode(
+          number
+        );
+
+
+      const formatted =
+        String(code)
+          .replace(/\s/g, "")
+          .match(/.{1,4}/g)
+          ?.join("-") ||
+        String(code);
+
+
+      console.log(
+        "🔐 Pairing code generated."
       );
 
+
+      res.json({
+
+        success:true,
+
+        code:formatted
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "❌ Pairing Error:",
+        error.message
+      );
+
+      res.status(500).json({
+
+        error:
+          error.message ||
+          "Pairing failed."
+
+      });
+
+    } finally {
+
+      pairingInProgress =
+        false;
+
     }
 
-    const code =
-      await sock.requestPairingCode(number);
-
-    const formatted =
-      String(code)
-        .replace(/\s/g,"")
-        .match(/.{1,4}/g)
-        ?.join("-") ||
-      String(code);
-
-    console.log(
-      "🔐 Pairing code generated from website."
-    );
-
-    res.json({
-      success:true,
-      code:formatted
-    });
-
-  }catch(error){
-
-    console.error(
-      "❌ Pairing Error:",
-      error.message
-    );
-
-    res.status(500).json({
-      error:
-        error.message ||
-        "Pairing failed."
-    });
-
-  }finally{
-
-    pairingInProgress = false;
-
   }
-
-});
+);
 
 
 /* =========================================================
@@ -534,28 +869,260 @@ app.post("/api/pair", async (req, res) => {
 app.listen(
   PORT,
   "0.0.0.0",
-  ()=>{
+  () => {
+
     console.log(
-      "🌐 BK BABU website running on port " + PORT
+      "🌐 BK BABU website running on port " +
+      PORT
     );
+
   }
 );
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function getNumberFromJid(jid) {
+
+  return String(jid || "")
+    .split("@")[0]
+    .replace(/\D/g, "");
+
+}
+
+
+function isOwner(jid) {
+
+  return (
+    getNumberFromJid(jid) ===
+    OWNER_NUMBER
+  );
+
+}
+
+
+function isGroup(jid) {
+
+  return String(jid || "")
+    .endsWith("@g.us");
+
+}
+
+
+function getText(msg) {
+
+  return (
+    msg?.message?.conversation ||
+
+    msg?.message
+      ?.extendedTextMessage
+      ?.text ||
+
+    msg?.message
+      ?.imageMessage
+      ?.caption ||
+
+    msg?.message
+      ?.videoMessage
+      ?.caption ||
+
+    ""
+  );
+
+}
+
+
+function getMentions(msg) {
+
+  return (
+    msg?.message
+      ?.extendedTextMessage
+      ?.contextInfo
+      ?.mentionedJid ||
+    []
+  );
+
+}
+
+
+async function getGroupData(jid) {
+
+  const metadata =
+    await sock.groupMetadata(jid);
+
+  const participants =
+    metadata.participants || [];
+
+  const botNumber =
+    sock.user?.id
+      ?.split(":")[0]
+      ?.replace(/\D/g, "");
+
+  const admins =
+    participants
+      .filter(
+        p =>
+          p.admin === "admin" ||
+          p.admin === "superadmin"
+      )
+      .map(
+        p =>
+          getNumberFromJid(p.id)
+      );
+
+  return {
+
+    metadata,
+
+    participants,
+
+    admins,
+
+    botIsAdmin:
+      admins.includes(
+        botNumber
+      )
+
+  };
+
+}
+
+
+function isAdmin(
+  participants,
+  jid
+) {
+
+  const user =
+    participants.find(
+      p => p.id === jid
+    );
+
+  return !!(
+    user &&
+    (
+      user.admin === "admin" ||
+      user.admin === "superadmin"
+    )
+  );
+
+}
+
+
+async function sendText(
+  jid,
+  text
+) {
+
+  return sock.sendMessage(
+    jid,
+    { text }
+  );
+
+}
+
+
+async function groupOnly(
+  jid
+) {
+
+  if (!isGroup(jid)) {
+
+    await sendText(
+      jid,
+      "❌ This command works only in groups."
+    );
+
+    return false;
+
+  }
+
+  return true;
+
+}
+
+
+async function adminCommand(
+  jid,
+  sender
+) {
+
+  if (!await groupOnly(jid)) {
+
+    return false;
+
+  }
+
+  const data =
+    await getGroupData(jid);
+
+  if (
+    !isAdmin(
+      data.participants,
+      sender
+    ) &&
+    !isOwner(sender)
+  ) {
+
+    await sendText(
+      jid,
+      "❌ This command is for group admins only."
+    );
+
+    return false;
+
+  }
+
+  if (!data.botIsAdmin) {
+
+    await sendText(
+      jid,
+      "❌ Please make BK-BABU a group admin first."
+    );
+
+    return false;
+
+  }
+
+  return data;
+
+}
+
+
+function settingStatus(
+  name,
+  enabled
+) {
+
+  return (
+    enabled
+      ? `🟢 ${name} is ON`
+      : `🔴 ${name} is OFF`
+  );
+
+}
 
 
 /* =========================================================
    WHATSAPP BOT
    ========================================================= */
 
-async function startBot(){
+async function startBot() {
 
-  try{
+  try {
 
     pairingReady = false;
 
     pairingReadyPromise =
-      new Promise((resolve)=>{
-        pairingReadyResolve = resolve;
-      });
+      new Promise(
+        resolve => {
+          pairingReadyResolve =
+            resolve;
+        }
+      );
+
 
     const {
       state,
@@ -565,11 +1132,13 @@ async function startBot(){
         AUTH_DIR
       );
 
+
     const {
       version,
       isLatest
     } =
       await fetchLatestBaileysVersion();
+
 
     console.log(
       "🌐 WhatsApp version:",
@@ -581,32 +1150,32 @@ async function startBot(){
       isLatest
     );
 
+
     sock =
       makeWASocket({
 
         version,
 
-        auth:state,
+        auth: state,
 
         logger:
           P({
             level:"silent"
           }),
 
-        /*
-         * Use a normal browser profile.
-         * Avoid custom browser labels for
-         * pairing-code compatibility.
-         */
-
         browser:
-          Browsers.macOS("Chrome"),
+          Browsers.macOS(
+            "Chrome"
+          ),
 
-        markOnlineOnConnect:false,
+        markOnlineOnConnect:
+          false,
 
-        connectTimeoutMs:60000,
+        connectTimeoutMs:
+          60000,
 
-        defaultQueryTimeoutMs:60000
+        defaultQueryTimeoutMs:
+          60000
 
       });
 
@@ -617,46 +1186,40 @@ async function startBot(){
     );
 
 
+    /*
+     * Pairing-code requests can be made
+     * after the socket is created.
+     */
+
+    pairingReady = true;
+
+    if (pairingReadyResolve) {
+
+      pairingReadyResolve(true);
+
+      pairingReadyResolve = null;
+
+    }
+
+
     /* =====================================================
        CONNECTION
        ===================================================== */
 
     sock.ev.on(
       "connection.update",
-      async(update)=>{
+      async update => {
 
         const {
           connection,
-          lastDisconnect,
-          qr
+          lastDisconnect
         } = update;
 
 
-        /*
-         * QR event means the socket is ready
-         * enough for pairing-code requests.
-         */
-
-        if(qr){
-
-          pairingReady = true;
-
-          if(pairingReadyResolve){
-
-            pairingReadyResolve(true);
-
-            pairingReadyResolve = null;
-
-          }
-
-          console.log(
-            "🔐 BK BABU pairing service ready."
-          );
-
-        }
-
-
-        if(connection === "connecting"){
+        if (
+          connection ===
+          "connecting"
+        ) {
 
           console.log(
             "🔄 BK BABU connecting..."
@@ -665,7 +1228,10 @@ async function startBot(){
         }
 
 
-        if(connection === "open"){
+        if (
+          connection ===
+          "open"
+        ) {
 
           pairingReady = false;
 
@@ -684,7 +1250,10 @@ async function startBot(){
         }
 
 
-        if(connection === "close"){
+        if (
+          connection ===
+          "close"
+        ) {
 
           const statusCode =
             lastDisconnect
@@ -692,19 +1261,22 @@ async function startBot(){
               ?.output
               ?.statusCode;
 
+
           console.log(
             "❌ WhatsApp connection closed:",
             statusCode
           );
 
+
           sock = null;
+
           pairingReady = false;
 
 
-          if(
+          if (
             statusCode ===
             DisconnectReason.loggedOut
-          ){
+          ) {
 
             console.log(
               "⚠️ WhatsApp session logged out."
@@ -715,9 +1287,162 @@ async function startBot(){
           }
 
 
-          setTimeout(()=>{
-            startBot();
-          },5000);
+          setTimeout(
+            () => {
+              startBot();
+            },
+            5000
+          );
+
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       GROUP PARTICIPANTS
+       ===================================================== */
+
+    sock.ev.on(
+      "group-participants.update",
+      async update => {
+
+        try {
+
+          const {
+            id,
+            participants,
+            action
+          } = update;
+
+
+          if (
+            !id ||
+            !participants?.length
+          ) {
+
+            return;
+
+          }
+
+
+          const settings =
+            getSettings(id);
+
+
+          if (
+            action !== "add" &&
+            action !== "remove"
+          ) {
+
+            return;
+
+          }
+
+
+          if (
+            action === "add" &&
+            !settings.welcome
+          ) {
+
+            return;
+
+          }
+
+
+          if (
+            action === "remove" &&
+            !settings.goodbye
+          ) {
+
+            return;
+
+          }
+
+
+          const metadata =
+            await sock.groupMetadata(id);
+
+
+          for (
+            const participant
+            of participants
+          ) {
+
+            const number =
+              getNumberFromJid(
+                participant
+              );
+
+            const mention =
+              [participant];
+
+
+            if (
+              action === "add"
+            ) {
+
+              await sock.sendMessage(
+                id,
+                {
+
+                  text:
+`╭━━━〔 👋 WELCOME 〕━━━╮
+┃
+┃ 🎉 Welcome to the group!
+┃
+┃ 👤 @${number}
+┃ 🏠 ${metadata.subject}
+┃
+┃ 💙 We are happy to have you here.
+┃ 🤖 Powered by ${BOT_NAME}
+┃
+╰━━━━━━━━━━━━━━━━━━━━━━╯`,
+
+                  mentions:mention
+
+                }
+              );
+
+            }
+
+
+            if (
+              action === "remove"
+            ) {
+
+              await sock.sendMessage(
+                id,
+                {
+
+                  text:
+`╭━━━〔 👋 GOODBYE 〕━━━╮
+┃
+┃ 🚪 One member has left.
+┃
+┃ 👤 @${number}
+┃
+┃ 😄 The group will remember you!
+┃ 🤖 ${BOT_NAME}
+┃
+╰━━━━━━━━━━━━━━━━━━━━━━╯`,
+
+                  mentions:mention
+
+                }
+              );
+
+            }
+
+          }
+
+        } catch (error) {
+
+          console.log(
+            "⚠️ Welcome/Goodbye error:",
+            error.message
+          );
 
         }
 
@@ -731,62 +1456,121 @@ async function startBot(){
 
     sock.ev.on(
       "messages.upsert",
-      async({messages})=>{
+      async ({ messages }) => {
 
-        try{
+        try {
 
-          for(const msg of messages){
+          for (
+            const msg
+            of messages
+          ) {
 
-            if(
+            if (
               !msg ||
               !msg.message
-            ){
+            ) {
+
               continue;
+
             }
+
 
             const jid =
               msg.key.remoteJid;
 
-            if(!jid){
+
+            if (!jid) {
+
               continue;
+
             }
 
 
-            /*
-             * Ignore status broadcasts.
-             */
+            if (
+              jid ===
+              "status@broadcast"
+            ) {
 
-            if(
-              jid === "status@broadcast"
-            ){
               continue;
+
             }
+
+
+            const sender =
+              msg.key.participant ||
+              jid;
 
 
             const text =
-              msg.message.conversation ||
-
-              msg.message.extendedTextMessage
-                ?.text ||
-
-              msg.message.imageMessage
-                ?.caption ||
-
-              msg.message.videoMessage
-                ?.caption ||
-
-              "";
+              getText(msg);
 
 
             const cleanText =
               String(text).trim();
 
-            if(!cleanText){
-              continue;
+
+            /*
+             * AUTO READ
+             */
+
+            if (
+              isGroup(jid) &&
+              getSettings(jid)
+                .autoread
+            ) {
+
+              try {
+
+                await sock.readMessages([
+                  msg.key
+                ]);
+
+              } catch {}
+
             }
 
 
-            const command =
+            /*
+             * AUTO REACT
+             */
+
+            if (
+              isGroup(jid) &&
+              getSettings(jid)
+                .autoreact &&
+              !msg.key.fromMe
+            ) {
+
+              try {
+
+                await sock.sendMessage(
+                  jid,
+                  {
+
+                    react: {
+
+                      text: "❤️",
+
+                      key: msg.key
+
+                    }
+
+                  }
+                );
+
+              } catch {}
+
+            }
+
+
+            if (!cleanText) {
+
+              continue;
+
+            }
+
+
+            const lower =
               cleanText.toLowerCase();
 
 
@@ -797,262 +1581,5 @@ async function startBot(){
 
 
             /* =================================================
-               MENU
-               ================================================= */
-
-            if(
-              command ===
-              `${PREFIX}menu`
-            ){
-
-              const menuText =
-
-`╭━━━〔 🤖 ${BOT_NAME} 〕━━━╮
-┃
-┃ 👑 Owner : ${OWNER_NAME}
-┃ ⚡ Prefix : ${PREFIX}
-┃ 📡 Status : Online
-┃
-┣━━〔 📋 MAIN 〕━━
-┃
-┃ ${PREFIX}menu
-┃ ${PREFIX}ping
-┃ ${PREFIX}alive
-┃ ${PREFIX}about
-┃ ${PREFIX}owner
-┃ ${PREFIX}help
-┃
-┣━━〔 🎵 MUSIC 〕━━
-┃
-┃ Music features will be added
-┃ to this section.
-┃
-┣━━〔 👥 GROUP 〕━━
-┃
-┃ Group features will be added
-┃ to this section.
-┃
-┣━━〔 📊 STATUS 〕━━
-┃
-┃ Status features will be added
-┃ to this section.
-┃
-┣━━〔 🛠️ TOOLS 〕━━
-┃
-┃ Tool features will be added
-┃ to this section.
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━╯
-
-⚡ POWERED BY ${OWNER_NAME}`;
-
-
-              /*
-               * Send menu image first.
-               */
-
-              try{
-
-                await sock.sendMessage(
-                  jid,
-                  {
-                    image:{
-                      url:MENU_IMG
-                    },
-                    caption:menuText
-                  }
-                );
-
-              }catch(imageError){
-
-                console.log(
-                  "⚠️ Menu image failed, sending text menu."
-                );
-
-                await sock.sendMessage(
-                  jid,
-                  {
-                    text:menuText
-                  }
-                );
-
-              }
-
-              continue;
-
-            }
-
-
-            /* =================================================
-               PING
-               ================================================= */
-
-            if(
-              command ===
-              `${PREFIX}ping`
-            ){
-
-              await sock.sendMessage(
-                jid,
-                {
-                  text:
-`🏓 *PONG!*
-
-🤖 ${BOT_NAME}
-🟢 Status: Online
-⚡ System: Working`
-                }
-              );
-
-              continue;
-
-            }
-
-
-            /* =================================================
-               ALIVE
-               ================================================= */
-
-            if(
-              command ===
-              `${PREFIX}alive`
-            ){
-
-              await sock.sendMessage(
-                jid,
-                {
-                  text:
-`❤️ *${BOT_NAME} IS ALIVE!*
-
-🟢 Online
-⚡ Ready
-🤖 Powered by ${OWNER_NAME}`
-                }
-              );
-
-              continue;
-
-            }
-
-
-            /* =================================================
-               ABOUT
-               ================================================= */
-
-            if(
-              command ===
-              `${PREFIX}about`
-            ){
-
-              await sock.sendMessage(
-                jid,
-                {
-                  text:
-`🤖 *${BOT_NAME}*
-
-⚡ WhatsApp Bot powered by Baileys
-👑 Owner: ${OWNER_NAME}
-📡 Status: Online
-⚙️ Prefix: ${PREFIX}`
-                }
-              );
-
-              continue;
-
-            }
-
-
-            /* =================================================
-               OWNER
-               ================================================= */
-
-            if(
-              command ===
-              `${PREFIX}owner`
-            ){
-
-              await sock.sendMessage(
-                jid,
-                {
-                  text:
-`👑 *OWNER*
-
-${OWNER_NAME}
-
-🤖 ${BOT_NAME}`
-                }
-              );
-
-              continue;
-
-            }
-
-
-            /* =================================================
-               HELP
-               ================================================= */
-
-            if(
-              command ===
-              `${PREFIX}help`
-            ){
-
-              await sock.sendMessage(
-                jid,
-                {
-                  text:
-`🆘 *${BOT_NAME} HELP*
-
-📋 ${PREFIX}menu
-🏓 ${PREFIX}ping
-❤️ ${PREFIX}alive
-ℹ️ ${PREFIX}about
-👑 ${PREFIX}owner
-🆘 ${PREFIX}help
-
-⚡ POWERED BY ${OWNER_NAME}`
-                }
-              );
-
-              continue;
-
-            }
-
-          }
-
-        }catch(error){
-
-          console.error(
-            "❌ Message Error:",
-            error.message
-          );
-
-        }
-
-      }
-    );
-
-
-  }catch(error){
-
-    console.error(
-      "❌ BK BABU START ERROR:",
-      error.message
-    );
-
-    sock = null;
-
-    setTimeout(()=>{
-      startBot();
-    },10000);
-
-  }
-
-}
-
-
-/* =========================================================
-   START
-   ========================================================= */
-
-startBot();
+               ANTI LINK
+             
