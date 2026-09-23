@@ -49,7 +49,7 @@ module.exports = {
 
     MENU_IMG:
         process.env.MENU_IMG ||
-        "https://bandaheali-cdn.koyeb.app/bandaheali/smd.jpg",
+        "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png
 
     // =============================
     // SITE URL FOR PAIR CMD
