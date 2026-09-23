@@ -1,7 +1,7 @@
 {
-  "name": "smd-mini",
+  "name": "BK-BABU",
   "version": "1.0.0",
-  "description": "SMD Mini WhatsApp Bot using Baileys and MongoDB",
+  "description": "BK BABU WhatsApp Bot using Baileys",
   "type": "commonjs",
   "main": "index.js",
 
@@ -15,16 +15,15 @@
     "dev": "nodemon index.js"
   },
 
-  "author": "Team-Bandaheali",
+  "author": "BK BABU",
   "license": "MIT",
 
   "keywords": [
-    "smd",
-    "shaban",
-    "shabanmd",
-    "bandaheali",
-    "edith",
-    "team-bandaheali"
+    "BK-BABU",
+    "BK-BABU-BOT",
+    "WhatsApp-Bot",
+    "Baileys",
+    "Nodejs-Bot"
   ],
 
   "dependencies": {
