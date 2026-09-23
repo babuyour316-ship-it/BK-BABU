@@ -1,6 +1,6 @@
-# 🚀 SMD-MINI
-### A Powerful WhatsApp Bot  
-> Created with ❤️ by **Team-Bandaheali**
+# 🤖 BK BABU BOT
+### A Powerful WhatsApp Bot
+> Created with ❤️ by **BK BABU**
 
 <p align="center">
 <img src="https://bandaheali-cdn.koyeb.app/bandaheali/smd.jpg" alt="SMD-MINI" width="500">
