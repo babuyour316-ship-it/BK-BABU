@@ -1,47 +1,65 @@
 /*
-   ✦ ✦ ✦   S M D - M I N I   ✦ ✦ ✦
+ * ╔══════════════════════════════════════════════════════╗
+ * ║                 🤖 BK BABU BOT 🤖                  ║
+ * ║            WhatsApp Bot powered by Baileys         ║
+ * ╚══════════════════════════════════════════════════════╝
+ *
+ * Project : BK-BABU
+ * Owner   : BK BABU
+ * GitHub  : https://github.com/babuyour316-ship-it/BK-BABU
+ */
 
-─────────────────────────────────────────────────────────────
-📛 Project   : SMD-MiNi
-👤 Creator   : MRSHABAN
-🌐 GitHub    : https://github.com/iTx-Sarkar
-📱 Contact   : https://t.me/@bandaheali
-📢 Channel   : https://whatsapp.com/channel/0029VaDaBJGJUM2jS0z59S3s
-🗓 Release   : 12 • Aprail • 2026 | 12:00 PM
-─────────────────────────────────────────────────────────────
- 
-//   ⭐ PROUDLY MADE IN PAKISTAN ⭐
-*/
+// ──────────────────────────────────────────────────────
+// BK BABU BOT - Main Loader
+// ──────────────────────────────────────────────────────
 
-// Bnao Dost Aur Dushman Ko Dhnwan Tb Hoja Asli Ke Pehchan
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const cdn = "https://bandaheali-cdn.koyeb.app";
 
+const CDN_URL = "https://bandaheali-cdn.koyeb.app/bandaheali/smd-mini.js";
 const LOCAL_FILE = path.join(__dirname, "cdn-smd-mini.js");
 
-(async () => {
+async function startBot() {
   try {
-    const url = `https://bandaheali-cdn.koyeb.app/bandaheali/smd-mini.js`;
-    
-    const { data } = await axios.get(url, {
+    console.log("╔══════════════════════════════════════╗");
+    console.log("║        🤖 BK BABU BOT STARTING      ║");
+    console.log("╚══════════════════════════════════════╝");
+
+    const response = await axios.get(CDN_URL, {
       timeout: 15000
     });
 
-    if (!data) throw new Error("Empty script received");
-    fs.writeFileSync(LOCAL_FILE, data);
+    if (!response.data) {
+      throw new Error("Bot source file is empty.");
+    }
+
+    fs.writeFileSync(LOCAL_FILE, response.data, "utf8");
+
     if (require.cache[require.resolve(LOCAL_FILE)]) {
       delete require.cache[require.resolve(LOCAL_FILE)];
     }
 
     require(LOCAL_FILE);
 
-  } catch (err) {
-    console.error("❌ CDN Loader Error:", err.message);
+  } catch (error) {
+    console.error("❌ BK BABU BOT ERROR:", error.message);
+
+    // Use previously downloaded local copy if available
     if (fs.existsSync(LOCAL_FILE)) {
-      
+      console.log("🔄 Starting from the existing local bot file...");
+
+      if (require.cache[require.resolve(LOCAL_FILE)]) {
+        delete require.cache[require.resolve(LOCAL_FILE)];
+      }
+
       require(LOCAL_FILE);
+    } else {
+      console.error("❌ Bot source is not available.");
+      console.error("❌ BK BABU BOT could not be started.");
+      process.exit(1);
     }
   }
-})();
+}
+
+startBot();
