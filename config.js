@@ -29,19 +29,19 @@ module.exports = {
     // =============================
     BOT_NAME:
         process.env.BOT_NAME ||
-        "SMD-MINI",
+        "BK-BABU",
 
     OWNER_NAME:
         process.env.OWNER_NAME ||
-        "TEAM-BANDAHEALI",
+        "BK BABU",
 
     CAPTION:
         process.env.CAPTION ||
-        "POWERED BY TEAM-BANDAHEALI",
+        "POWERED BY BK BABU",
 
     STATUS_MSG:
         process.env.STATUS_MSG ||
-        "Hello From Team-Bandaheali",
+        "Hello From BK BABU",
 
     NEWSLETTER_JID:
         process.env.NEWSLETTER_JID ||
