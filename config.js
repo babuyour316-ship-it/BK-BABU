@@ -1,64 +1,72 @@
-const fs = require('fs');
-const dotenv = require('dotenv');
+const fs = require("fs");
+const dotenv = require("dotenv");
 
-if (fs.existsSync('.env')) {
-    dotenv.config({ path: '.env' });
+if (fs.existsSync(".env")) {
+  dotenv.config({ path: ".env" });
 }
 
 module.exports = {
 
-    // =============================
-    // DATABASE
-    // =============================
-    DATABASE_URL:
-        process.env.MONGODB_URI ||
-        process.env.DATABASE_URL ||
-        "",
+  // ==============================
+  // DATABASE
+  // ==============================
+  DATABASE_URL:
+    process.env.MONGODB_URI ||
+    process.env.DATABASE_URL ||
+    "",
 
-    // =============================
-    // BOT CORE SETTINGS
-    // =============================
-    OWNER_NUMBER:
-        process.env.OWNER_NUMBER ||
-        "923253617422",
-    
-    PREFIX: process.env.PREFIX || ".",
 
-    // =============================
-    // GLOBAL BRANDING
-    // =============================
-    BOT_NAME:
-        process.env.BOT_NAME ||
-        "BK-BABU",
+  // ==============================
+  // BOT CORE SETTINGS
+  // ==============================
+  OWNER_NUMBER:
+    process.env.OWNER_NUMBER ||
+    "+917001490182",
 
-    OWNER_NAME:
-        process.env.OWNER_NAME ||
-        "BK BABU",
+  PREFIX:
+    process.env.PREFIX || ".",
 
-    CAPTION:
-        process.env.CAPTION ||
-        "POWERED BY BK BABU",
 
-    STATUS_MSG:
-        process.env.STATUS_MSG ||
-        "Hello From BK BABU",
+  // ==============================
+  // GLOBAL BRANDING
+  // ==============================
+  BOT_NAME:
+    process.env.BOT_NAME ||
+    "BK-BABU",
 
-    NEWSLETTER_JID:
-        process.env.NEWSLETTER_JID ||
-        "120363175375282051@newsletter",
+  OWNER_NAME:
+    process.env.OWNER_NAME ||
+    "BK BABU",
 
-    MENU_IMG:
-        process.env.MENU_IMG ||
-        "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png
+  CAPTION:
+    process.env.CAPTION ||
+    "POWERED BY BK BABU",
 
-    // =============================
-    // SITE URL FOR PAIR CMD
-    // =============================
-    SITE_URL:
-        process.env.SITE_URL ||
-        "https://mr-shaban.vercel.app",
+  STATUS_MSG:
+    process.env.STATUS_MSG ||
+    "Hello From BK BABU",
 
-    PORT:
-        process.env.PORT ||
-        "21604"
+  NEWSLETTER_JID:
+    process.env.NEWSLETTER_JID ||
+    "",
+
+  MENU_IMG:
+    process.env.MENU_IMG ||
+    "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png",
+
+
+  // ==============================
+  // PAIRING WEBSITE
+  // ==============================
+  SITE_URL:
+    process.env.SITE_URL ||
+    "",
+
+
+  // ==============================
+  // SERVER PORT
+  // ==============================
+  PORT:
+    process.env.PORT ||
+    "9090"
 };
