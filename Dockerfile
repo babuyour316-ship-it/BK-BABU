@@ -1,18 +1,19 @@
-
-
-FROM node:lts-buster
+FROM node:24
 
 # Set working directory
 WORKDIR /app
 
-# Copy all local files to container
-COPY . .
+# Copy package files
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install && npm install -g pm2
+RUN npm install
 
-# Expose the port your app listens on
+# Copy project files
+COPY . .
+
+# Expose application port
 EXPOSE 9090
 
-# Start the app
+# Start the bot
 CMD ["npm", "start"]
