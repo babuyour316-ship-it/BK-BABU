@@ -1,124 +1,150 @@
 # 🤖 BK BABU BOT
-### A Powerful WhatsApp Bot
-> Created with ❤️ by **BK BABU**
+
+### ⚡ A Powerful WhatsApp Bot
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png" alt="BK BABU BOT" width="500">
-</p>
-
-<p align="center">
-
-<a href="https://github.com/iTx-Sarkar/SMD-MINI/fork">
-<img src="https://img.shields.io/badge/FORK-SMD--MINI-blue?style=for-the-badge&logo=github">
-</a>
-
-<a href="https://github.com/iTx-Sarkar/SMD-MINI">
-<img src="https://img.shields.io/badge/GITHUB-REPOSITORY-black?style=for-the-badge&logo=github">
-</a>
-
-<a href="https://smd-mini.zone.id">
-<img src="https://img.shields.io/badge/DEPLOY-SMD--MINI-success?style=for-the-badge&logo=vercel">
-</a>
-
+  <img src="https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png" alt="BK BABU BOT" width="500">
 </p>
 
 ---
 
-# ✨ About SMD-MINI
-**SMD-MINI** is a fast, lightweight and powerful **WhatsApp Bot** built using **Baileys**.  
-It includes a plugin system, automation features, and a scalable bot architecture designed for speed and stability.
+## 👑 About BK BABU BOT
+
+**BK BABU BOT** is a WhatsApp bot project built with Node.js and Baileys.
+
+It is designed to provide useful WhatsApp automation, commands, media tools and other bot features.
+
+> ❤️ Created and customized by **BK BABU**
 
 ---
 
-# 👑 Team Bandaheali
+## ✨ Features
 
-<p align="center">
-<img src="https://bandaheali-cdn.koyeb.app/bandaheali/team.jpg" alt="Team-Bandaheali" width="500">
-</p>
-
-<p align="center">
-
-<a href="https://github.com/MESHABAN45">
-<img src="https://img.shields.io/badge/MR--SHABAN-CEO-purple?style=for-the-badge&logo=github">
-</a>
-
-<a href="https://github.com/iTx-Sarkar">
-<img src="https://img.shields.io/badge/RASHID-THE--DEVIL%20(Lead%20Developer)-red?style=for-the-badge&logo=github">
-</a>
-
-<a href="https://github.com/Bandah-e-Ali">
-<img src="https://img.shields.io/badge/BANDAHEALI-DONATER%20%26%20SUPPORTER-blue?style=for-the-badge&logo=github">
-</a>
-
-</p>
+- 🤖 WhatsApp Bot
+- ⚡ Fast and lightweight
+- 🧩 Plugin-based system
+- 🎵 Media-related commands
+- 🖼️ Image and sticker tools
+- 📥 Download and utility features
+- 👥 Group management features
+- ⚙️ Custom configuration
+- 🔧 Easy to customize
 
 ---
 
-# 📢 Official WhatsApp Channel
+## 📦 Requirements
 
-<p align="center">
+Before running the bot, make sure you have:
 
-<a href="https://whatsapp.com/channel/0029Vb84fm6Ae5VugThS6F07">
-<img src="https://img.shields.io/badge/JOIN-WHATSAPP%20CHANNEL-25D366?style=for-the-badge&logo=whatsapp&logoColor=white">
-</a>
+- **Node.js 24.x**
+- **npm 10 or newer**
+- A WhatsApp account
+- Internet connection
 
-</p>
-
----
-
-# 🚀 Deployment Options
-
-<p align="center">
-  <!-- Deploy to Heroku Button -->
-  <a href="https://www.heroku.com/deploy?template=https://github.com/iTx-Sarkar/SMD-MINI">
-    <img src="https://img.shields.io/badge/DEPLOY%20TO-HEROKU-430098?style=for-the-badge&logo=heroku&logoColor=white">
-  </a>
-</p>
-
-<p align="center">
-  <!-- Deploy to Render Button -->
-  <a href="https://render.com/deploy?repo=https://github.com/iTx-Sarkar/SMD-MINI">
-    <img src="https://img.shields.io/badge/DEPLOY%20TO-RENDER-46E3B7?style=for-the-badge&logo=render&logoColor=black">
-  </a>
-</p>
-
-<p align="center">
-  <!-- Deploy to Koyeb Button -->
-  <a href="https://app.koyeb.com/deploy?name=smd-mini&type=git&repository=iTx-Sarkar%2FSMD-MINI&branch=main&builder=dockerfile&instance_type=free&regions=was&instances_min=0&autoscaling_sleep_idle_delay=3900&env%5BBOT_NAME%5D=SMD-MiNi&env%5BNEWSLETTER_JID%5D=&env%5BPREFIX%5D=.&env%5BDATABASE_URL%5D=Enter Database Url&env%5BMENU_IMG%5D=https%3A%2F%2Fbandaheali-cdn.koyeb.app%2Fbandaheali%2Fteam.jpg&env%5BOWNER_NUMBER%5D=Team-bandaheali&env%5BSTATUS_REPLY_MSG%5D=Hello+from+bandaheali">
-    <img src="https://img.shields.io/badge/DEPLOY%20TO-KOYEB-00A0DC?style=for-the-badge&logo=koyeb&logoColor=white">
-  </a>
-</p>
-
-<p align="center">
-  <!-- Get Postgres Database Button (Cockroach Labs) -->
-  <a href="https://cockroachlabs.cloud/">
-    <img src="https://img.shields.io/badge/GET-POSTGRES%20DATABASE-6933FF?style=for-the-badge&logo=cockroachlabs&logoColor=white">
-  </a>
-</p>
+The repository's current `package.json` specifies Node.js 24.x and npm 10+. 2
 
 ---
 
-# ⚡ Installation
+## 🚀 Installation
+
+### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/iTx-Sarkar/SMD-MINI
-cd SMD-MINI
+git clone https://github.com/babuyour316-ship-it/BK-BABU
+```
+
+### 2️⃣ Open the project folder
+
+```bash
+cd BK-BABU
+```
+
+### 3️⃣ Install dependencies
+
+```bash
 npm install
+```
+
+### 4️⃣ Start the bot
+
+```bash
 npm start
 ```
 
 ---
 
-# ⭐ Support the Project
-If you like this project please **Fork 🍴 and Star ⭐ the repository** to support development.
+## ⚙️ Configuration
+
+Bot settings can be customized from:
+
+```text
+config.js
+```
+
+You can change the bot name, owner name, menu image and other available settings from the configuration file.
 
 ---
 
-# ⚠️ Disclaimer
-This project is made for **educational purposes only**.  
-The developers are not responsible for any misuse of this bot.
+## 🖼️ BK BABU BOT
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png" alt="BK BABU BOT" width="500">
+</p>
 
 ---
 
-# ❤️ Credits
-**SMD-MINI** Is Proudly Developed And Maintained By **Team-Bandaheali**
+## 🛠️ Project Structure
+
+```text
+BK-BABU/
+├── data/
+├── lib/
+├── plugins/
+├── config.js
+├── index.js
+├── package.json
+├── Dockerfile
+├── app.json
+├── LICENSE
+└── README.md
+```
+
+---
+
+## ❤️ Credits
+
+**BK BABU BOT**
+
+Created and customized by:
+
+> 👑 **BK BABU**
+
+This project is based on an open-source WhatsApp bot project.  
+Please keep the included `LICENSE` file and its required copyright notice.
+
+---
+
+## ⚠️ Disclaimer
+
+This project is provided for educational and development purposes.
+
+Use the bot responsibly and only with accounts, groups and content that you are authorized to use.
+
+The project creator is not responsible for misuse of the software.
+
+---
+
+## ⭐ Support
+
+If you like **BK BABU BOT**, you can:
+
+⭐ Star the repository  
+🍴 Fork the repository  
+🐛 Report bugs  
+💡 Suggest improvements
+
+---
+
+### 🔥 BK BABU BOT
+
+**Made with ❤️ by BK BABU**
