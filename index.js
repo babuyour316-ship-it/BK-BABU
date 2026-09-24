@@ -3656,31 +3656,51 @@ sock =
     );
 
     sock.ev.on(
-      "messages.upsert",
-      async ({
-        messages
-      }) => {
-        for (
-          const message of
-            messages
-        ) {
-          try {
-            await handleMessage(
-              message
-            );
-          } catch (
-            error
-          ) {
-            console.error(
-              "Message handler error:",
-              error?.message ||
-                error
-            );
-          }
-        }
-      }
+  "messages.upsert",
+  async ({
+    messages,
+    type
+  }) => {
+
+    console.log(
+      `📩 messages.upsert received | type=${type} | count=${messages?.length || 0}`
     );
 
+    if (
+      type !== "notify"
+    ) {
+      return;
+    }
+
+    for (
+      const message of
+        messages || []
+    ) {
+
+      try {
+
+        console.log(
+          `📨 Message received from: ${message?.key?.remoteJid || "unknown"}`
+        );
+
+        await handleMessage(
+          message
+        );
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Message handler error:",
+          error?.message ||
+            error
+        );
+
+      }
+    }
+  }
+);
     sock.ev.on(
       "group-participants.update",
       async update => {
