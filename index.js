@@ -3108,30 +3108,50 @@ if (
   return true;
 }
 
-  /*
-   * Anti-mention
+  const mentions =
+  mentionedUsers(
+    message
+  );
+    /*
+   * Anti-Status-Mention
+   * WhatsApp Story/Status থেকে Group Mention আটকাবে।
+   * Normal @number mention আটকাবে না।
    */
   if (
     cfg.antimention &&
-    mentions.length > 5
+    message.groupStatusMentionMessage
   ) {
+
+    // Bot must be Group Admin
+    if (!(await botIsAdmin(jid))) {
+      return false;
+    }
+
+    // Story/Status mention message delete
     try {
       await sock.sendMessage(
         jid,
         {
-          delete:
-            msg.key
+          delete: msg.key
         }
       );
     } catch {}
 
-    await reply(
-      jid,
-      `⚠️ @${senderNumber(
-        sender
-      )} excessive mentions are not allowed.`,
-      null
-    );
+    // Warning — sender remove করা হবে না
+    try {
+      await sock.sendMessage(
+        jid,
+        {
+          text:
+            `⚠️ @${senderNumber(sender)}\n` +
+            `স্ট্যাটাস/স্টোরি মেনশন করা এই গ্রুপে অনুমোদিত নয়।\n\n` +
+            `🚫 নেক্সট টাইম বোকাচোদা, কোনো মেনশন দিলে সরাসরি রিমুভ করে দেব। 😡`,
+          mentions: [
+            sender
+          ]
+        }
+      );
+    } catch {}
 
     return true;
   }
