@@ -3156,29 +3156,54 @@ if (
     return true;
   }
 
-  /*
+  const mentions =
+  mentionedUsers(
+    message
+  );
+    /*
    * Anti-sticker
+   * Normal sticker message block করবে।
    */
   if (
     cfg.antisticker &&
-    messageType ===
-      "stickerMessage"
+    message.stickerMessage
   ) {
+
+    // Bot must be Group Admin
+    if (!(await botIsAdmin(jid))) {
+      return false;
+    }
+
+    // Delete sticker
     try {
       await sock.sendMessage(
         jid,
         {
-          delete:
-            msg.key
+          delete: msg.key
+        }
+      );
+    } catch (error) {
+      console.error(
+        "❌ Anti-sticker delete error:",
+        error?.message || error
+      );
+    }
+
+    // Warning
+    try {
+      await sock.sendMessage(
+        jid,
+        {
+          text:
+            `⚠️ @${senderNumber(sender)}\n` +
+            `এই গ্রুপে Sticker পাঠানো নিষিদ্ধ।\n\n` +
+            `🚫 নেক্সট টাইম Sticker পাঠালে রিমুভ করে দেব।`,
+          mentions: [
+            sender
+          ]
         }
       );
     } catch {}
-
-    await reply(
-      jid,
-      `🛑 Stickers are disabled in this group.`,
-      null
-    );
 
     return true;
   }
