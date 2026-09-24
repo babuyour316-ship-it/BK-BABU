@@ -3794,7 +3794,6 @@ async function startBot() {
       10000
     );
   }
-      }
 function pageHtml() {
   const code = pairingCode || "WAITING";
   const number = pairingNumber || "";
