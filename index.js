@@ -3637,9 +3637,9 @@ sock =
         level:
           "silent"
       }),
-    browser:
+        browser:
       Browsers.ubuntu(
-        BOT_NAME
+        "Chrome"
       ),
     printQRInTerminal:
       false,
@@ -3757,16 +3757,58 @@ sock =
             `${BOT_NAME} connection closed: ${lastConnectionError}`
           );
 
-          if (
+           if (
             statusCode ===
             DisconnectReason.loggedOut
           ) {
             console.log(
-              "WhatsApp session logged out. Pair again from the web panel."
+              "WhatsApp session logged out. Resetting auth session for new pairing."
             );
 
+            try {
+              sock = null;
+              authState = null;
+
+              pairingBusy = false;
+              pairingCode = null;
+              pairingNumber = null;
+
+              if (
+                fs.existsSync(
+                  AUTH_DIR
+                )
+              ) {
+                fs.rmSync(
+                  AUTH_DIR,
+                  {
+                    recursive: true,
+                    force: true
+                  }
+                );
+              }
+
+              console.log(
+                "Old WhatsApp auth session deleted."
+              );
+
+            } catch (
+              resetError
+            ) {
+              console.error(
+                "Auth reset error:",
+                resetError?.message ||
+                  resetError
+              );
+            }
+
+            await sleep(
+              2000
+            );
+
+            startBot();
+
             return;
-          }
+                    }
 
           await sleep(
             5000
