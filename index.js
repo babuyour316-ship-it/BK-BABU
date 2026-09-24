@@ -10,7 +10,8 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   Browsers,
-  downloadMediaMessage
+  downloadMediaMessage,
+  fetchLatestWaWebVersion
 } = require("@whiskeysockets/baileys");
 
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
@@ -3623,28 +3624,34 @@ async function startBot() {
       saveCreds
     };
 
-    sock =
-      makeWASocket({
-        auth: state,
-        logger:
-          P({
-            level:
-              "silent"
-          }),
-        browser:
-          Browsers.ubuntu(
-            BOT_NAME
-          ),
-        printQRInTerminal:
-          false,
-        markOnlineOnConnect:
-          true,
-        syncFullHistory:
-          false,
-        generateHighQualityLinkPreview:
-          false
-      });
+     const {
+  version
+} = await fetchLatestWaWebVersion();
 
+sock =
+  makeWASocket({
+    version,
+    auth: state,
+    logger:
+      P({
+        level:
+          "silent"
+      }),
+    browser:
+      Browsers.ubuntu(
+        BOT_NAME
+      ),
+    countryCode:
+      "OM",
+    printQRInTerminal:
+      false,
+    markOnlineOnConnect:
+      true,
+    syncFullHistory:
+      false,
+    generateHighQualityLinkPreview:
+      false
+  });  
     sock.ev.on(
       "creds.update",
       saveCreds
