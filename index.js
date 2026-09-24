@@ -465,14 +465,43 @@ async function isAdmin(
 async function botIsAdmin(
   groupJid
 ) {
-  if (!sock?.user?.id) {
+  const metadata =
+    await groupMetadata(
+      groupJid
+    );
+
+  if (!metadata) {
     return false;
   }
 
-  return isAdmin(
-    groupJid,
-    sock.user.id
-  );
+  const botIds = [
+    sock?.user?.id,
+    sock?.user?.lid,
+    authState?.state?.creds?.me?.id,
+    authState?.state?.creds?.me?.lid
+  ].filter(Boolean);
+
+  const botParticipant =
+    metadata.participants.find(
+      p =>
+        botIds.some(
+          id =>
+            areJidsSameUser(
+              p.id,
+              id
+            ) ||
+            areJidsSameUser(
+              p.lid,
+              id
+            ) ||
+            areJidsSameUser(
+              p.phoneNumber,
+              id
+            )
+        )
+    );
+
+  return !!botParticipant?.admin;
 }
 
 function requireGroup(jid) {
