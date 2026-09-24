@@ -29,7 +29,7 @@ const PORT = Number(
 );
 
 const PREFIX =
-  process.env.PREFIX || ".";
+  process.env.PREFIX || "!";
 
 const BOT_NAME =
   process.env.BOT_NAME || "BK-BABU";
