@@ -916,7 +916,7 @@ async function commandHandler(
     args.join(" ").trim();
 
   const quoted =
-    msg.message;
+  msg;
 
   const group =
     isGroup(jid);
