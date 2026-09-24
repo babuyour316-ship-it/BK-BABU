@@ -11,7 +11,8 @@ const {
   DisconnectReason,
   Browsers,
   downloadMediaMessage,
-  fetchLatestWaWebVersion
+  fetchLatestWaWebVersion,
+  areJidsSameUser
 } = require("@whiskeysockets/baileys");
 
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
@@ -449,7 +450,13 @@ async function isAdmin(
 
   const user =
     metadata.participants.find(
-      p => p.id === userJid
+      p =>
+        areJidsSameUser(
+          p.id,
+          userJid
+        ) ||
+        p.lid === userJid ||
+        p.phoneNumber === userJid
     );
 
   return !!user?.admin;
