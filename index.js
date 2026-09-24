@@ -13,15 +13,25 @@ const {
   downloadMediaMessage
 } = require("@whiskeysockets/baileys");
 
-const { Sticker, StickerTypes } = require("wa-sticker-formatter");
+const {
+  Sticker,
+  StickerTypes
+} = require("wa-sticker-formatter");
 
 const app = express();
 
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({
-  extended: true,
-  limit: "2mb"
-}));
+app.use(
+  express.json({
+    limit: "2mb"
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "2mb"
+  })
+);
 
 const PORT = Number(
   process.env.PORT || 9090
@@ -31,10 +41,12 @@ const PREFIX =
   process.env.PREFIX || ".";
 
 const BOT_NAME =
-  process.env.BOT_NAME || "BK-BABU";
+  process.env.BOT_NAME ||
+  "BK-BABU";
 
 const OWNER_NAME =
-  process.env.OWNER_NAME || "BK BABU";
+  process.env.OWNER_NAME ||
+  "BK BABU";
 
 const OWNER_NUMBER =
   String(
@@ -49,40 +61,54 @@ const OPENAI_API_KEY =
   process.env.OPENAI_API_KEY || "";
 
 const OPENAI_MODEL =
-  process.env.OPENAI_MODEL || "gpt-5-mini";
+  process.env.OPENAI_MODEL ||
+  "gpt-5-mini";
 
-const AUTH_DIR = path.join(
-  __dirname,
-  "auth_info_baileys"
-);
+const AUTH_DIR =
+  path.join(
+    __dirname,
+    "auth_info_baileys"
+  );
 
-const DATA_DIR = path.join(
-  __dirname,
-  "data"
-);
+const DATA_DIR =
+  path.join(
+    __dirname,
+    "data"
+  );
 
-const SETTINGS_FILE = path.join(
+const SETTINGS_FILE =
+  path.join(
+    DATA_DIR,
+    "group-settings.json"
+  );
+
+const WARN_FILE =
+  path.join(
+    DATA_DIR,
+    "warnings.json"
+  );
+
+const BLOCK_FILE =
+  path.join(
+    DATA_DIR,
+    "blocked.json"
+  );
+
+fs.mkdirSync(
   DATA_DIR,
-  "group-settings.json"
+  {
+    recursive: true
+  }
 );
 
-const WARN_FILE = path.join(
-  DATA_DIR,
-  "warnings.json"
-);
-
-const BLOCK_FILE = path.join(
-  DATA_DIR,
-  "blocked.json"
-);
-
-fs.mkdirSync(DATA_DIR, {
-  recursive: true
-});
-
-function readJson(file, fallback) {
+function readJson(
+  file,
+  fallback
+) {
   try {
-    if (!fs.existsSync(file)) {
+    if (
+      !fs.existsSync(file)
+    ) {
       return fallback;
     }
 
@@ -97,7 +123,10 @@ function readJson(file, fallback) {
   }
 }
 
-function writeJson(file, value) {
+function writeJson(
+  file,
+  value
+) {
   try {
     fs.writeFileSync(
       file,
@@ -194,6 +223,10 @@ function getSettings(jid) {
 
 let sock = null;
 
+// Auth state is kept separately.
+// Web pairing will use this state.
+let authState = null;
+
 let starting = false;
 
 let botOnline = false;
@@ -283,7 +316,8 @@ function getText(message) {
     message.imageMessage?.caption ||
     message.videoMessage?.caption ||
     message.documentMessage?.caption ||
-    message.buttonsResponseMessage?.selectedButtonId ||
+    message.buttonsResponseMessage
+      ?.selectedButtonId ||
     message.listResponseMessage
       ?.singleSelectReply
       ?.selectedRowId ||
@@ -519,625 +553,6 @@ function formatDuration(ms) {
 
   return `${m}m ${sec}s`;
 }
-
-function menuText() {
-  return `
-╭━━━〔 🤖 ${BOT_NAME} 〕━━━╮
-┃ 👑 Owner : ${OWNER_NAME}
-┃ ⚡ Prefix : ${PREFIX}
-┃ 📡 Status : ${
-    botOnline
-      ? "Online"
-      : "Offline"
-  }
-
-┣━━〔 🏠 MAIN 〕━━
-┃ ${PREFIX}menu
-┃ ${PREFIX}help
-┃ ${PREFIX}ping
-┃ ${PREFIX}alive
-┃ ${PREFIX}about
-┃ ${PREFIX}owner
-┃ ${PREFIX}botinfo
-┃ ${PREFIX}status
-
-┣━━〔 👥 GROUP 〕━━
-┃ ${PREFIX}groupinfo
-┃ ${PREFIX}groupid
-┃ ${PREFIX}admins
-┃ ${PREFIX}members
-┃ ${PREFIX}tagall
-┃ ${PREFIX}hidetag text
-┃ ${PREFIX}everyone
-┃ ${PREFIX}kick @user
-┃ ${PREFIX}add number
-┃ ${PREFIX}promote @user
-┃ ${PREFIX}demote @user
-┃ ${PREFIX}mute / ${PREFIX}unmute
-┃ ${PREFIX}open / ${PREFIX}close
-┃ ${PREFIX}setname text
-┃ ${PREFIX}setdesc text
-
-┣━━〔 🛡️ SECURITY 〕━━
-┃ ${PREFIX}antilink on/off
-┃ ${PREFIX}antimention on/off
-┃ ${PREFIX}antispam on/off
-┃ ${PREFIX}antiflood on/off
-┃ ${PREFIX}antibadword on/off
-┃ ${PREFIX}antisticker on/off
-┃ ${PREFIX}warn @user
-┃ ${PREFIX}warnings @user
-┃ ${PREFIX}resetwarn @user
-
-┣━━〔 👋 WELCOME 〕━━
-┃ ${PREFIX}welcome on/off
-┃ ${PREFIX}goodbye on/off
-┃ ${PREFIX}setwelcome text
-┃ ${PREFIX}setgoodbye text
-
-┣━━〔 ⚡ AUTO 〕━━
-┃ ${PREFIX}autoread on/off
-┃ ${PREFIX}autoreact on/off
-
-┣━━〔 🧰 TOOLS 〕━━
-┃ ${PREFIX}calc 10+20
-┃ ${PREFIX}time
-┃ ${PREFIX}weather city
-┃ ${PREFIX}translate en|hello
-┃ ${PREFIX}define word
-┃ ${PREFIX}ytsearch query
-┃ ${PREFIX}wiki query
-┃ ${PREFIX}short url
-┃ ${PREFIX}qr text
-
-┣━━〔 🎵 MEDIA 〕━━
-┃ ${PREFIX}play query
-┃ ${PREFIX}song query
-┃ ${PREFIX}sticker
-
-┣━━〔 🤖 AI 〕━━
-┃ ${PREFIX}ai question
-
-┣━━〔 👑 OWNER 〕━━
-┃ ${PREFIX}block @user
-┃ ${PREFIX}unblock @user
-┃ ${PREFIX}restart
-┃ ${PREFIX}botoff
-┃ ${PREFIX}boton
-
-╰━━━━━━━━━━━━━━━━━━━━━━╯
-
-⚡ POWERED BY ${OWNER_NAME}
-`;
-  }
-async function safeGroupAdmin(
-  jid,
-  sender,
-  replyJid,
-  quoted
-) {
-  if (!requireGroup(jid)) {
-    await reply(
-      replyJid,
-      "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
-      quoted
-    );
-    return false;
-  }
-
-  if (!isOwner(sender)) {
-    const admin =
-      await isAdmin(
-        jid,
-        sender
-      );
-
-    if (!admin) {
-      await reply(
-        replyJid,
-        "❌ এই কমান্ড ব্যবহার করতে হলে তোমাকে Group Admin হতে হবে।",
-        quoted
-      );
-      return false;
-    }
-  }
-
-  if (
-    !(await botIsAdmin(jid))
-  ) {
-    await reply(
-      replyJid,
-      "❌ আমাকে আগে Group Admin বানাও।",
-      quoted
-    );
-    return false;
-  }
-
-  return true;
-}
-
-async function sendHelp(
-  jid,
-  quoted
-) {
-  const text = `
-╭━━〔 📚 ${BOT_NAME} HELP 〕━━╮
-
-🏠 MAIN
-• ${PREFIX}menu
-• ${PREFIX}help
-• ${PREFIX}ping
-• ${PREFIX}alive
-• ${PREFIX}about
-• ${PREFIX}owner
-• ${PREFIX}botinfo
-• ${PREFIX}status
-
-👥 GROUP
-• ${PREFIX}groupinfo
-• ${PREFIX}admins
-• ${PREFIX}members
-• ${PREFIX}tagall
-• ${PREFIX}hidetag text
-• ${PREFIX}kick @user
-• ${PREFIX}add number
-• ${PREFIX}promote @user
-• ${PREFIX}demote @user
-• ${PREFIX}open
-• ${PREFIX}close
-• ${PREFIX}setname
-• ${PREFIX}setdesc
-
-🛡️ SECURITY
-• ${PREFIX}antilink on/off
-• ${PREFIX}antimention on/off
-• ${PREFIX}antispam on/off
-• ${PREFIX}antiflood on/off
-• ${PREFIX}antibadword on/off
-• ${PREFIX}antisticker on/off
-• ${PREFIX}warn @user
-• ${PREFIX}warnings
-• ${PREFIX}resetwarn
-
-👋 WELCOME
-• ${PREFIX}welcome on/off
-• ${PREFIX}goodbye on/off
-• ${PREFIX}setwelcome text
-• ${PREFIX}setgoodbye text
-
-⚡ AUTO
-• ${PREFIX}autoread on/off
-• ${PREFIX}autoreact on/off
-
-🧰 TOOLS
-• ${PREFIX}calc 25*4
-• ${PREFIX}time
-• ${PREFIX}weather city
-• ${PREFIX}translate en|hello
-• ${PREFIX}define word
-• ${PREFIX}ytsearch query
-• ${PREFIX}wiki query
-• ${PREFIX}short url
-• ${PREFIX}qr text
-
-🎵 MEDIA
-• ${PREFIX}play query
-• ${PREFIX}song query
-• ${PREFIX}sticker
-
-🤖 AI
-• ${PREFIX}ai question
-
-👑 OWNER
-• ${PREFIX}block @user
-• ${PREFIX}unblock @user
-• ${PREFIX}restart
-• ${PREFIX}botoff
-• ${PREFIX}boton
-
-⚡ ${BOT_NAME}
-`;
-
-  await reply(
-    jid,
-    text,
-    quoted
-  );
-}
-
-function getWarnings(
-  groupJid,
-  userJid
-) {
-  if (!warnings[groupJid]) {
-    warnings[groupJid] = {};
-  }
-
-  if (
-    typeof warnings[groupJid][userJid] !==
-    "number"
-  ) {
-    warnings[groupJid][userJid] = 0;
-  }
-
-  return warnings[groupJid][userJid];
-}
-
-function addWarning(
-  groupJid,
-  userJid
-) {
-  const count =
-    getWarnings(
-      groupJid,
-      userJid
-    ) + 1;
-
-  warnings[groupJid][userJid] =
-    count;
-
-  saveWarnings();
-
-  return count;
-}
-
-function resetWarning(
-  groupJid,
-  userJid
-) {
-  if (
-    warnings[groupJid]
-  ) {
-    delete warnings[groupJid][userJid];
-    saveWarnings();
-  }
-}
-
-function containsLink(text) {
-  return /https?:\/\/|www\.|chat\.whatsapp\.com\/|t\.me\/|discord\.gg\//i.test(
-    text
-  );
-}
-
-function containsBadWord(
-  text,
-  list
-) {
-  const lower =
-    String(text || "")
-      .toLowerCase();
-
-  return list.some(
-    word =>
-      word &&
-      lower.includes(
-        String(word)
-          .toLowerCase()
-      )
-  );
-}
-
-function getTimeText() {
-  return new Date().toLocaleString(
-    "en-IN",
-    {
-      timeZone:
-        "Asia/Kolkata",
-      dateStyle:
-        "full",
-      timeStyle:
-        "medium"
-    }
-  );
-}
-
-function safeMath(
-  expression
-) {
-  const exp =
-    String(
-      expression || ""
-    )
-      .replace(
-        /[^0-9+\-*/().% ]/g,
-        ""
-      )
-      .trim();
-
-  if (!exp) {
-    return null;
-  }
-
-  if (exp.length > 100) {
-    return null;
-  }
-
-  try {
-    const result =
-      Function(
-        `"use strict"; return (${exp})`
-      )();
-
-    if (
-      typeof result !==
-        "number" ||
-      !Number.isFinite(
-        result
-      )
-    ) {
-      return null;
-    }
-
-    return result;
-  } catch {
-    return null;
-  }
-}
-
-async function commandHandler(
-  msg,
-  jid,
-  sender,
-  text
-) {
-  if (!text) {
-    return;
-  }
-
-  if (
-    !text.startsWith(
-      PREFIX
-    )
-  ) {
-    return;
-  }
-
-  const raw =
-    text.slice(
-      PREFIX.length
-    ).trim();
-
-  if (!raw) {
-    return;
-  }
-
-  const parts =
-    raw.split(/\s+/);
-
-  const command =
-    String(
-      parts.shift() || ""
-    ).toLowerCase();
-
-  const args = parts;
-
-  const argText =
-    args.join(" ").trim();
-
-  const quoted =
-    msg.message;
-
-  const group =
-    isGroup(jid);
-
-  const groupSettings =
-    group
-      ? getSettings(jid)
-      : null;
-
-  if (
-    blocked.has(
-      sender
-    ) &&
-    !isOwner(sender)
-  ) {
-    return;
-  }
-
-  if (
-    command === "menu" ||
-    command === "start"
-  ) {
-    await sendImage(
-      jid,
-      MENU_IMG,
-      menuText(),
-      quoted
-    );
-    return;
-  }
-
-  if (
-    command === "help"
-  ) {
-    await sendHelp(
-      jid,
-      quoted
-    );
-    return;
-  }
-
-  if (
-    command === "ping"
-  ) {
-    const started =
-      Date.now();
-
-    await reply(
-      jid,
-      "🏓 Checking...",
-      quoted
-    );
-
-    const ms =
-      Date.now() -
-      started;
-
-    await reply(
-      jid,
-      `🏓 Pong!\n⚡ Response: ${ms}ms`,
-      quoted
-    );
-
-    return;
-  }
-
-  if (
-    command === "alive"
-  ) {
-    await reply(
-      jid,
-      `╭━━〔 🤖 ${BOT_NAME} 〕━━╮
-┃ 🟢 Bot is online
-┃ ⚡ Prefix: ${PREFIX}
-┃ 👑 Owner: ${OWNER_NAME}
-┃ 📡 WhatsApp: ${
-        botOnline
-          ? "Connected"
-          : "Disconnected"
-      }
-╰━━━━━━━━━━━━━━━━━━━━╯`,
-      quoted
-    );
-
-    return;
-  }
-
-  if (
-    command === "about"
-  ) {
-    await reply(
-      jid,
-      `╭━━〔 ℹ️ ABOUT 〕━━╮
-┃ 🤖 ${BOT_NAME}
-┃ ⚡ WhatsApp Automation Bot
-┃ 🛠️ Built with Node.js
-┃ 🔌 Powered by Baileys
-┃ 👑 ${OWNER_NAME}
-╰━━━━━━━━━━━━━━━━━━━━╯`,
-      quoted
-    );
-
-    return;
-  }
-
-  if (
-    command === "owner"
-  ) {
-    const ownerJid =
-      OWNER_NUMBER
-        ? `${OWNER_NUMBER}@s.whatsapp.net`
-        : null;
-
-    if (ownerJid) {
-      await sock.sendMessage(
-        jid,
-        {
-          contacts: {
-            displayName:
-              OWNER_NAME,
-            contacts: [
-              {
-                vcard:
-`BEGIN:VCARD
-VERSION:3.0
-FN:${OWNER_NAME}
-TEL;type=CELL;type=VOICE:+${OWNER_NUMBER}
-END:VCARD`
-              }
-            ]
-          }
-        },
-        {
-          quoted
-        }
-      );
-    } else {
-      await reply(
-        jid,
-        `👑 Owner: ${OWNER_NAME}`,
-        quoted
-      );
-    }
-
-    return;
-  }
-
-  if (
-    command === "botinfo"
-  ) {
-    await reply(
-      jid,
-      `╭━━〔 🤖 BOT INFO 〕━━╮
-┃ Name: ${BOT_NAME}
-┃ Owner: ${OWNER_NAME}
-┃ Prefix: ${PREFIX}
-┃ Status: ${
-        botOnline
-          ? "Online 🟢"
-          : "Offline 🔴"
-      }
-┃ Node: ${process.version}
-┃ Platform: ${process.platform}
-┃ Uptime: ${formatDuration(
-        process.uptime() * 1000
-      )}
-╰━━━━━━━━━━━━━━━━━━━━╯`,
-      quoted
-    );
-
-    return;
-  }
-
-  if (
-    command === "status"
-  ) {
-    await reply(
-      jid,
-      `📡 ${BOT_NAME} STATUS
-
-🟢 Bot: ${
-        botOnline
-          ? "Online"
-          : "Offline"
-      }
-
-🌐 Web Server: Online
-⚡ Port: ${PORT}
-🧠 Node: ${process.version}
-⏱️ Uptime: ${formatDuration(
-        process.uptime() * 1000
-      )}
-
-${lastConnectionError
-  ? `⚠️ Last connection note: ${lastConnectionError}`
-  : "✅ No recent connection error."}`,
-      quoted
-    );
-
-    return;
-  }
-
-  if (
-    command === "calc" ||
-    command === "calculate"
-  ) {
-    const result =
-      safeMath(
-        argText
-      );
-
-    if (
-      result === null
-    ) {
-      await reply(
-        jid,
-        `❌ Example:\n${PREFIX}calc 100/5`,
-        quoted
-      );
-      return;
-    }
-
     await reply(
       jid,
       `🧮 Result: ${result}`,
@@ -1152,7 +567,7 @@ ${lastConnectionError
   ) {
     await reply(
       jid,
-      `🕐 India Time\n${getTimeText()}`,
+      `🕒 India Time\n\n${getTimeText()}`,
       quoted
     );
 
@@ -1165,7 +580,7 @@ ${lastConnectionError
     if (!argText) {
       await reply(
         jid,
-        `🌤️ Example:\n${PREFIX}weather Siliguri`,
+        `❌ Example:\n${PREFIX}weather Siliguri`,
         quoted
       );
       return;
@@ -1181,168 +596,70 @@ ${lastConnectionError
         await axios.get(
           url,
           {
-            timeout: 10000
+            timeout: 15000
           }
         );
 
+      const data =
+        response.data;
+
       const current =
-        response.data
-          ?.current_condition
-          ?.[0];
+        data?.current_condition?.[0];
 
       const area =
-        response.data
-          ?.nearest_area
-          ?.[0];
+        data?.nearest_area?.[0];
 
       if (!current) {
         throw new Error(
-          "Weather unavailable"
+          "Weather data unavailable"
         );
       }
 
       const location =
-        area
-          ?.areaName?.[0]
-          ?.value ||
+        area?.areaName?.[0]?.value ||
         argText;
+
+      const country =
+        area?.country?.[0]?.value ||
+        "";
+
+      const temp =
+        current.temp_C;
+
+      const feels =
+        current.FeelsLikeC;
+
+      const humidity =
+        current.humidity;
+
+      const wind =
+        current.windspeedKmph;
+
+      const condition =
+        current.weatherDesc?.[0]?.value ||
+        "Unknown";
 
       await reply(
         jid,
         `🌤️ WEATHER
 
-📍 ${location}
-🌡️ Temperature: ${current.temp_C}°C
-🤗 Feels like: ${current.FeelsLikeC}°C
-💧 Humidity: ${current.humidity}%
-💨 Wind: ${current.windspeedKmph} km/h
-☁️ Condition: ${
-          current.weatherDesc
-            ?.[0]?.value ||
-          "Unknown"
-        }`,
-        quoted
-      );
-    } catch {
-      await reply(
-        jid,
-        "❌ Weather data পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করো।",
-        quoted
-      );
-    }
-
-    return;
-  }
-
-  if (
-    command === "ytsearch" ||
-    command === "yts"
-  ) {
-    if (!argText) {
-      await reply(
-        jid,
-        `🔎 Example:\n${PREFIX}ytsearch Arijit Singh`,
-        quoted
-      );
-      return;
-    }
-
-    try {
-      const result =
-        await ytSearch(
-          argText
-        );
-
-      const videos =
-        result.videos
-          .slice(0, 8);
-
-      if (!videos.length) {
-        await reply(
-          jid,
-          "❌ কোনো YouTube result পাওয়া যায়নি।",
-          quoted
-        );
-        return;
-      }
-
-      let out =
-        `🔎 YouTube Search\n\n`;
-
-      videos.forEach(
-        (video, index) => {
-          out +=
-`\n${index + 1}. ${video.title}
-⏱️ ${video.timestamp}
-👁️ ${video.views}
-🔗 ${video.url}\n`;
+📍 Location: ${location}${
+          country
+            ? `, ${country}`
+            : ""
         }
-      );
 
-      await reply(
-        jid,
-        out,
+🌡️ Temperature: ${temp}°C
+🤔 Feels Like: ${feels}°C
+💧 Humidity: ${humidity}%
+💨 Wind: ${wind} km/h
+☁️ Condition: ${condition}`,
         quoted
       );
-    } catch {
+    } catch (error) {
       await reply(
         jid,
-        "❌ YouTube search এখন কাজ করছে না।",
-        quoted
-      );
-    }
-
-    return;
-  }
-
-  if (
-    command === "play" ||
-    command === "song"
-  ) {
-    if (!argText) {
-      await reply(
-        jid,
-        `🎵 Example:\n${PREFIX}play song name`,
-        quoted
-      );
-      return;
-    }
-
-    try {
-      const result =
-        await ytSearch(
-          argText
-        );
-
-      const video =
-        result.videos?.[0];
-
-      if (!video) {
-        await reply(
-          jid,
-          "❌ গান পাওয়া যায়নি।",
-          quoted
-        );
-        return;
-      }
-
-      await reply(
-        jid,
-        `🎵 MUSIC RESULT
-
-🎧 Title: ${video.title}
-⏱️ Duration: ${video.timestamp}
-👁️ Views: ${video.views}
-
-🔗 ${video.url}
-
-ℹ️ এটি YouTube search result link।`,
-        quoted
-      );
-    } catch {
-      await reply(
-        jid,
-        "❌ Music search failed.",
+        `❌ Weather পাওয়া যাচ্ছে না।\n\nTry:\n${PREFIX}weather Siliguri`,
         quoted
       );
     }
@@ -1357,7 +674,7 @@ ${lastConnectionError
     if (!argText) {
       await reply(
         jid,
-        `🌐 Example:\n${PREFIX}translate en|hello world`,
+        `❌ Example:\n${PREFIX}translate en|hello\n\nFormat:\n${PREFIX}translate language|text`,
         quoted
       );
       return;
@@ -1366,47 +683,55 @@ ${lastConnectionError
     const split =
       argText.split("|");
 
+    const target =
+      String(
+        split.shift() || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    const sourceText =
+      split.join("|").trim();
+
     if (
-      split.length < 2
+      !target ||
+      !sourceText
     ) {
       await reply(
         jid,
-        `🌐 Format:\n${PREFIX}translate language|text`,
+        `❌ Example:\n${PREFIX}translate bn|Hello everyone`,
         quoted
       );
       return;
     }
 
-    const language =
-      split.shift()
-        .trim();
-
-    const source =
-      split.join("|")
-        .trim();
-
     try {
       const url =
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(
-          language
-        )}&dt=t&q=${encodeURIComponent(
-          source
-        )}`;
+        "https://translate.googleapis.com/translate_a/single";
 
       const response =
         await axios.get(
           url,
           {
-            timeout: 10000
+            params: {
+              client: "gtx",
+              sl: "auto",
+              tl: target,
+              dt: "t",
+              q: sourceText
+            },
+            timeout: 15000
           }
         );
 
       const translated =
         response.data?.[0]
           ?.map(
-            x => x?.[0] || ""
+            item =>
+              item?.[0] || ""
           )
-          .join("");
+          .join("")
+          .trim();
 
       if (!translated) {
         throw new Error(
@@ -1416,7 +741,15 @@ ${lastConnectionError
 
       await reply(
         jid,
-        `🌐 Translation\n\n${translated}`,
+        `🌐 TRANSLATION
+
+🔤 Language: ${target}
+
+📝 Original:
+${sourceText}
+
+✅ Translation:
+${translated}`,
         quoted
       );
     } catch {
@@ -1437,67 +770,140 @@ ${lastConnectionError
     if (!argText) {
       await reply(
         jid,
-        `📖 Example:\n${PREFIX}define technology`,
+        `❌ Example:\n${PREFIX}define computer`,
         quoted
       );
       return;
     }
 
     try {
-      const url =
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(
-          argText
-        )}`;
-
       const response =
         await axios.get(
-          url,
+          `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(
+            argText
+          )}`,
           {
-            timeout: 10000
+            timeout: 15000
           }
         );
 
-      const data =
+      const entry =
         response.data?.[0];
 
-      const meaning =
-        data
-          ?.meanings?.[0];
+      const phonetic =
+        entry?.phonetic ||
+        entry?.phonetics?.find(
+          p => p?.text
+        )?.text ||
+        "";
 
-      const definition =
-        meaning
-          ?.definitions?.[0]
-          ?.definition;
+      const meanings =
+        entry?.meanings || [];
 
-      const example =
-        meaning
-          ?.definitions?.[0]
-          ?.example;
+      let output =
+        `📖 DEFINITION\n\n`;
+      
+      output +=
+        `🔤 Word: ${entry?.word || argText}\n`;
+
+      if (phonetic) {
+        output +=
+          `🔊 ${phonetic}\n`;
+      }
+
+      for (
+        const meaning
+        of meanings.slice(0, 3)
+      ) {
+        output +=
+          `\n📚 ${meaning.partOfSpeech || "Meaning"}\n`;
+
+        for (
+          const def
+          of (meaning.definitions || [])
+            .slice(0, 2)
+        ) {
+          output +=
+            `• ${def.definition}\n`;
+        }
+      }
 
       await reply(
         jid,
-        `📖 DICTIONARY
-
-🔤 Word: ${data?.word || argText}
-🏷️ Type: ${
-          meaning?.partOfSpeech ||
-          "Unknown"
-        }
-
-📚 Meaning:
-${definition || "Not found"}
-
-${
-  example
-    ? `📝 Example:\n${example}`
-    : ""
-}`,
+        output.trim(),
         quoted
       );
     } catch {
       await reply(
         jid,
-        "❌ এই শব্দটির definition পাওয়া যায়নি।",
+        `❌ Meaning not found for "${argText}".`,
+        quoted
+      );
+    }
+
+    return;
+  }
+
+  if (
+    command === "ytsearch" ||
+    command === "yts"
+  ) {
+    if (!argText) {
+      await reply(
+        jid,
+        `❌ Example:\n${PREFIX}ytsearch Arijit Singh`,
+        quoted
+      );
+      return;
+    }
+
+    try {
+      const result =
+        await ytSearch(
+          argText
+        );
+
+      const videos =
+        result?.videos || [];
+
+      if (!videos.length) {
+        await reply(
+          jid,
+          "❌ No YouTube results found.",
+          quoted
+        );
+        return;
+      }
+
+      let output =
+        `🔎 YOUTUBE SEARCH\n\n`;
+
+      videos
+        .slice(0, 5)
+        .forEach(
+          (video, index) => {
+            output +=
+`╭─〔 ${index + 1} 〕
+┃ 🎵 ${video.title}
+┃ 👤 ${video.author?.name || "Unknown"}
+┃ ⏱️ ${video.timestamp || "Unknown"}
+┃ 👁️ ${video.views || 0}
+┃ 🔗 ${video.url}
+╰──────────────
+
+`;
+          }
+        );
+
+      await reply(
+        jid,
+        output.trim(),
+        quoted
+      );
+    } catch {
+      await reply(
+        jid,
+        "❌ YouTube search failed.",
         quoted
       );
     }
@@ -1512,51 +918,61 @@ ${
     if (!argText) {
       await reply(
         jid,
-        `📚 Example:\n${PREFIX}wiki Bangladesh`,
+        `❌ Example:\n${PREFIX}wiki India`,
         quoted
       );
       return;
     }
 
     try {
-      const url =
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-          argText.replace(
-            /\s+/g,
-            "_"
-          )
-        )}`;
-
       const response =
         await axios.get(
-          url,
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+            argText
+          )}`,
           {
-            timeout: 10000
+            timeout: 15000
           }
         );
 
       const data =
         response.data;
 
+      const title =
+        data?.title ||
+        argText;
+
+      const extract =
+        data?.extract ||
+        "";
+
+      const page =
+        data?.content_urls
+          ?.desktop
+          ?.page ||
+        "";
+
+      if (!extract) {
+        throw new Error(
+          "No Wikipedia summary"
+        );
+      }
+
       await reply(
         jid,
         `📚 WIKIPEDIA
 
-📌 ${data.title || argText}
+🔹 ${title}
 
-${data.extract || "No summary found."}
+${extract}
 
-🔗 ${
-          data.content_urls
-            ?.desktop?.page ||
-          ""
-        }`,
+🔗 ${page}`,
         quoted
       );
     } catch {
       await reply(
         jid,
-        "❌ Wikipedia result পাওয়া যায়নি।",
+        `❌ Wikipedia result পাওয়া যায়নি।`,
         quoted
       );
     }
@@ -1570,20 +986,7 @@ ${data.extract || "No summary found."}
     if (!argText) {
       await reply(
         jid,
-        `🔗 Example:\n${PREFIX}short https://example.com`,
-        quoted
-      );
-      return;
-    }
-
-    if (
-      !/^https?:\/\//i.test(
-        argText
-      )
-    ) {
-      await reply(
-        jid,
-        "❌ Valid http/https URL দাও।",
+        `❌ Example:\n${PREFIX}short https://example.com`,
         quoted
       );
       return;
@@ -1592,25 +995,35 @@ ${data.extract || "No summary found."}
     try {
       const response =
         await axios.get(
-          `https://is.gd/create.php?format=simple&url=${encodeURIComponent(
-            argText
-          )}`,
+          "https://tinyurl.com/api-create.php",
           {
-            timeout: 10000
+            params: {
+              url: argText
+            },
+            timeout: 15000
           }
         );
 
+      const shortUrl =
+        String(
+          response.data || ""
+        ).trim();
+
+      if (!shortUrl) {
+        throw new Error(
+          "Short URL failed"
+        );
+      }
+
       await reply(
         jid,
-        `🔗 Short URL:\n${String(
-          response.data
-        ).trim()}`,
+        `🔗 SHORT URL\n\n${shortUrl}`,
         quoted
       );
     } catch {
       await reply(
         jid,
-        "❌ URL shortener এখন কাজ করছে না।",
+        "❌ URL shortening failed.",
         quoted
       );
     }
@@ -1624,35 +1037,79 @@ ${data.extract || "No summary found."}
     if (!argText) {
       await reply(
         jid,
-        `🔳 Example:\n${PREFIX}qr Hello BK-BABU`,
+        `❌ Example:\n${PREFIX}qr Hello`,
         quoted
       );
       return;
     }
 
     const qrUrl =
-      `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(
+      `https://api.qrserver.com/v1/create-qr-code/?size=800x800&data=${encodeURIComponent(
         argText
       )}`;
 
-    try {
-      await sock.sendMessage(
+    await sendImage(
+      jid,
+      qrUrl,
+      `🔳 QR CODE\n\n${argText}`,
+      quoted
+    );
+
+    return;
+  }
+
+  if (
+    command === "play" ||
+    command === "song"
+  ) {
+    if (!argText) {
+      await reply(
         jid,
-        {
-          image: {
-            url: qrUrl
-          },
-          caption:
-            "🔳 QR Code generated by BK-BABU"
-        },
-        {
+        `❌ Example:\n${PREFIX}${command} Arijit Singh song`,
+        quoted
+      );
+      return;
+    }
+
+    try {
+      const result =
+        await ytSearch(
+          argText
+        );
+
+      const video =
+        result?.videos?.[0];
+
+      if (!video) {
+        await reply(
+          jid,
+          "❌ Song পাওয়া যায়নি.",
           quoted
-        }
+        );
+        return;
+      }
+
+      await reply(
+        jid,
+        `🎵 ${command.toUpperCase()}
+
+🎶 Title:
+${video.title}
+
+👤 Channel:
+${video.author?.name || "Unknown"}
+
+⏱️ Duration:
+${video.timestamp || "Unknown"}
+
+🔗 YouTube:
+${video.url}`,
+        quoted
       );
     } catch {
       await reply(
         jid,
-        `🔳 QR:\n${qrUrl}`,
+        "❌ Song search failed.",
         quoted
       );
     }
@@ -1666,7 +1123,7 @@ ${data.extract || "No summary found."}
     if (!argText) {
       await reply(
         jid,
-        `🤖 Example:\n${PREFIX}ai Explain JavaScript in simple words`,
+        `❌ Example:\n${PREFIX}ai Hello`,
         quoted
       );
       return;
@@ -1675,7 +1132,7 @@ ${data.extract || "No summary found."}
     if (!OPENAI_API_KEY) {
       await reply(
         jid,
-        "⚠️ AI চালু করতে OPENAI_API_KEY environment variable সেট করতে হবে।",
+        "❌ AI API key is not configured.",
         quoted
       );
       return;
@@ -1693,7 +1150,7 @@ ${data.extract || "No summary found."}
                 role:
                   "system",
                 content:
-                  "You are a helpful WhatsApp bot assistant. Keep answers clear and reasonably concise."
+                  `You are ${BOT_NAME}, a helpful WhatsApp assistant.`
               },
               {
                 role:
@@ -1701,9 +1158,7 @@ ${data.extract || "No summary found."}
                 content:
                   argText
               }
-            ],
-            temperature:
-              0.7
+            ]
           },
           {
             headers: {
@@ -1712,8 +1167,7 @@ ${data.extract || "No summary found."}
               "Content-Type":
                 "application/json"
             },
-            timeout:
-              30000
+            timeout: 60000
           }
         );
 
@@ -1721,29 +1175,32 @@ ${data.extract || "No summary found."}
         response.data
           ?.choices?.[0]
           ?.message
-          ?.content;
+          ?.content
+          ?.trim();
 
       await reply(
         jid,
         answer ||
-          "❌ AI কোনো উত্তর দেয়নি।",
+          "❌ AI did not return a response.",
         quoted
       );
-    } catch {
+    } catch (error) {
       await reply(
         jid,
-        "❌ AI request failed। API key/model settings পরীক্ষা করো।",
+        `❌ AI request failed.\n${error?.response?.data?.error?.message || error?.message || ""}`,
         quoted
       );
     }
 
     return;
-  
-    }
-    if (
+  }
+
+  if (
     command === "groupinfo"
   ) {
-    if (!group) {
+    if (
+      !requireGroup(jid)
+    ) {
       await reply(
         jid,
         "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
@@ -1760,32 +1217,39 @@ ${data.extract || "No summary found."}
     if (!metadata) {
       await reply(
         jid,
-        "❌ Group information পাওয়া যাচ্ছে না।",
+        "❌ Group information পাওয়া যায়নি.",
         quoted
       );
       return;
     }
 
-    const admins =
-      metadata.participants.filter(
-        p => !!p.admin
-      );
-
     await reply(
       jid,
-      `╭━━〔 👥 GROUP INFO 〕━━╮
-┃ 📌 Name:
-┃ ${metadata.subject || "Unknown"}
-┃
-┃ 👤 Members:
-┃ ${metadata.participants.length}
-┃
-┃ 👑 Admins:
-┃ ${admins.length}
-┃
-┃ 🆔 Group ID:
-┃ ${jid}
-╰━━━━━━━━━━━━━━━━━━━━╯`,
+      `👥 GROUP INFO
+
+📛 Name:
+${metadata.subject || "Unknown"}
+
+🆔 ID:
+${jid}
+
+👤 Members:
+${metadata.participants?.length || 0}
+
+👑 Owner:
+${metadata.owner || "Unknown"}
+
+📅 Created:
+${
+        metadata.creation
+          ? new Date(
+              metadata.creation *
+                1000
+            ).toLocaleString(
+              "en-IN"
+            )
+          : "Unknown"
+      }`,
       quoted
     );
 
@@ -1795,7 +1259,9 @@ ${data.extract || "No summary found."}
   if (
     command === "groupid"
   ) {
-    if (!group) {
+    if (
+      !requireGroup(jid)
+    ) {
       await reply(
         jid,
         "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
@@ -1816,7 +1282,9 @@ ${data.extract || "No summary found."}
   if (
     command === "admins"
   ) {
-    if (!group) {
+    if (
+      !requireGroup(jid)
+    ) {
       await reply(
         jid,
         "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
@@ -1831,33 +1299,41 @@ ${data.extract || "No summary found."}
       );
 
     if (!metadata) {
+      await reply(
+        jid,
+        "❌ Group data পাওয়া যায়নি.",
+        quoted
+      );
       return;
     }
 
     const admins =
       metadata.participants
         .filter(
-          p => !!p.admin
-        )
-        .map(
-          p => `@${senderNumber(p.id)}`
+          p => p.admin
         );
+
+    let output =
+      `👑 GROUP ADMINS\n\n`;
+
+    admins.forEach(
+      (admin, index) => {
+        output +=
+          `${index + 1}. @${senderNumber(
+            admin.id
+          )}\n`;
+      }
+    );
 
     await sock.sendMessage(
       jid,
       {
         text:
-          `👑 GROUP ADMINS\n\n${admins.join(
-            "\n"
-          )}`,
+          output.trim(),
         mentions:
-          metadata.participants
-            .filter(
-              p => !!p.admin
-            )
-            .map(
-              p => p.id
-            )
+          admins.map(
+            a => a.id
+          )
       },
       {
         quoted
@@ -1870,7 +1346,9 @@ ${data.extract || "No summary found."}
   if (
     command === "members"
   ) {
-    if (!group) {
+    if (
+      !requireGroup(jid)
+    ) {
       await reply(
         jid,
         "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
@@ -1885,34 +1363,55 @@ ${data.extract || "No summary found."}
       );
 
     if (!metadata) {
+      await reply(
+        jid,
+        "❌ Group data পাওয়া যায়নি.",
+        quoted
+      );
       return;
     }
 
-    let text =
+    const members =
+      metadata.participants || [];
+
+    let output =
       `👥 GROUP MEMBERS\n\n`;
 
-    metadata.participants
+    members
+      .slice(0, 100)
       .forEach(
-        (p, index) => {
-          text +=
+        (member, index) => {
+          output +=
             `${index + 1}. @${senderNumber(
-              p.id
+              member.id
             )}${
-              p.admin
+              member.admin
                 ? " 👑"
                 : ""
             }\n`;
         }
       );
 
+    if (
+      members.length > 100
+    ) {
+      output +=
+        `\n... and ${
+          members.length - 100
+        } more`;
+    }
+
     await sock.sendMessage(
       jid,
       {
-        text,
+        text:
+          output.trim(),
         mentions:
-          metadata.participants.map(
-            p => p.id
-          )
+          members
+            .slice(0, 100)
+            .map(
+              m => m.id
+            )
       },
       {
         quoted
@@ -1926,24 +1425,14 @@ ${data.extract || "No summary found."}
     command === "tagall" ||
     command === "everyone"
   ) {
-    if (!group) {
-      await reply(
-        jid,
-        "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
-        quoted
-      );
-      return;
-    }
-
-    const allowed =
-      await safeGroupAdmin(
+    if (
+      !await safeGroupAdmin(
         jid,
         sender,
         jid,
         quoted
-      );
-
-    if (!allowed) {
+      )
+    ) {
       return;
     }
 
@@ -1952,28 +1441,27 @@ ${data.extract || "No summary found."}
         jid
       );
 
-    if (!metadata) {
-      return;
-    }
-
     const members =
-      metadata.participants
-        .map(
-          p => p.id
-        );
+      metadata?.participants ||
+      [];
 
-    const message =
+    const text =
       argText ||
-      "📢 Everyone attention please!";
+      "Attention everyone!";
 
-    let text =
-      `${message}\n\n`;
+    const mentions =
+      members.map(
+        member => member.id
+      );
+
+    let output =
+      `📢 ${text}\n\n`;
 
     members.forEach(
-      user => {
-        text +=
+      member => {
+        output +=
           `@${senderNumber(
-            user
+            member.id
           )} `;
       }
     );
@@ -1981,9 +1469,9 @@ ${data.extract || "No summary found."}
     await sock.sendMessage(
       jid,
       {
-        text,
-        mentions:
-          members
+        text:
+          output.trim(),
+        mentions
       },
       {
         quoted
@@ -1996,24 +1484,14 @@ ${data.extract || "No summary found."}
   if (
     command === "hidetag"
   ) {
-    if (!group) {
-      await reply(
-        jid,
-        "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
-        quoted
-      );
-      return;
-    }
-
-    const allowed =
-      await safeGroupAdmin(
+    if (
+      !await safeGroupAdmin(
         jid,
         sender,
         jid,
         quoted
-      );
-
-    if (!allowed) {
+      )
+    ) {
       return;
     }
 
@@ -2022,24 +1500,20 @@ ${data.extract || "No summary found."}
         jid
       );
 
-    if (!metadata) {
-      return;
-    }
-
     const members =
-      metadata.participants
-        .map(
-          p => p.id
-        );
+      metadata?.participants ||
+      [];
 
     await sock.sendMessage(
       jid,
       {
         text:
           argText ||
-          "📢 Group notification!",
+          "📢 Attention everyone!",
         mentions:
-          members
+          members.map(
+            m => m.id
+          )
       },
       {
         quoted
@@ -2052,24 +1526,14 @@ ${data.extract || "No summary found."}
   if (
     command === "kick"
   ) {
-    if (!group) {
-      await reply(
-        jid,
-        "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
-        quoted
-      );
-      return;
-    }
-
-    const allowed =
-      await safeGroupAdmin(
+    if (
+      !await safeGroupAdmin(
         jid,
         sender,
         jid,
         quoted
-      );
-
-    if (!allowed) {
+      )
+    ) {
       return;
     }
 
@@ -2082,37 +1546,7 @@ ${data.extract || "No summary found."}
     if (!target) {
       await reply(
         jid,
-        `❌ একজন user mention/reply করো।\nExample: ${PREFIX}kick @user`,
-        quoted
-      );
-      return;
-    }
-
-    if (
-      target ===
-      sock.user.id
-    ) {
-      await reply(
-        jid,
-        "❌ আমি নিজেকে kick করতে পারি না।",
-        quoted
-      );
-      return;
-    }
-
-    const targetAdmin =
-      await isAdmin(
-        jid,
-        target
-      );
-
-    if (
-      targetAdmin &&
-      !isOwner(sender)
-    ) {
-      await reply(
-        jid,
-        "❌ অন্য একজন admin-কে remove করার অনুমতি নেই।",
+        `❌ Example:\n${PREFIX}kick @user`,
         quoted
       );
       return;
@@ -2127,15 +1561,15 @@ ${data.extract || "No summary found."}
 
       await reply(
         jid,
-        `✅ @${senderNumber(
+        `✅ Removed @${senderNumber(
           target
-        )} removed.`,
+        )}`,
         quoted
       );
     } catch {
       await reply(
         jid,
-        "❌ User remove করা যায়নি।",
+        "❌ Failed to remove member.",
         quoted
       );
     }
@@ -2146,24 +1580,14 @@ ${data.extract || "No summary found."}
   if (
     command === "add"
   ) {
-    if (!group) {
-      await reply(
-        jid,
-        "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
-        quoted
-      );
-      return;
-    }
-
-    const allowed =
-      await safeGroupAdmin(
+    if (
+      !await safeGroupAdmin(
         jid,
         sender,
         jid,
         quoted
-      );
-
-    if (!allowed) {
+      )
+    ) {
       return;
     }
 
@@ -2175,7 +1599,7 @@ ${data.extract || "No summary found."}
     if (!target) {
       await reply(
         jid,
-        `❌ Example:\n${PREFIX}add 919876543210`,
+        `❌ Example:\n${PREFIX}add 919999999999`,
         quoted
       );
       return;
@@ -2192,20 +1616,19 @@ ${data.extract || "No summary found."}
         jid,
         `✅ Add request sent for @${senderNumber(
           target
-        )}.`,
+        )}`,
         quoted
       );
     } catch {
       await reply(
         jid,
-        "❌ User add করা যায়নি। WhatsApp-এর group privacy/settings-এর কারণে হতে পারে।",
+        "❌ Failed to add member.",
         quoted
       );
     }
 
     return;
-  }
-
+        }
   if (
     command === "promote" ||
     command === "demote"
@@ -2958,7 +2381,7 @@ ${data.extract || "No summary found."}
 
     return;
   }
-      }
+  }
 async function handleGroupProtection(
   msg,
   jid,
@@ -2999,9 +2422,7 @@ async function handleGroupProtection(
       );
   }
 
-  if (
-    senderAdmin
-  ) {
+  if (senderAdmin) {
     return false;
   }
 
@@ -3081,7 +2502,7 @@ async function handleGroupProtection(
 
     await reply(
       jid,
-      `🛑 Stickers are disabled in this group.`,
+      "🛑 Stickers are disabled in this group.",
       null
     );
 
@@ -3383,9 +2804,7 @@ async function sendWelcome(
       groupJid
     );
 
-  if (
-    !cfg.welcome
-  ) {
+  if (!cfg.welcome) {
     return;
   }
 
@@ -3417,9 +2836,7 @@ async function sendGoodbye(
       groupJid
     );
 
-  if (
-    !cfg.goodbye
-  ) {
+  if (!cfg.goodbye) {
     return;
   }
 
@@ -3473,10 +2890,8 @@ async function handleParticipantsUpdate(
     }
 
     if (
-      action ===
-        "remove" ||
-      action ===
-        "leave"
+      action === "remove" ||
+      action === "leave"
     ) {
       await sendGoodbye(
         update.id,
@@ -3500,9 +2915,7 @@ async function handleMessage(
     return;
   }
 
-  if (
-    isStatus(jid)
-  ) {
+  if (isStatus(jid)) {
     return;
   }
 
@@ -3522,9 +2935,7 @@ async function handleMessage(
     jid;
 
   const text =
-    getText(
-      message
-    );
+    getText(message);
 
   const cfg =
     isGroup(jid)
@@ -3552,9 +2963,7 @@ async function handleMessage(
     cfg?.autoreact &&
     msg.key &&
     text &&
-    !text.startsWith(
-      PREFIX
-    )
+    !text.startsWith(PREFIX)
   ) {
     const emojis = [
       "❤️",
@@ -3583,9 +2992,7 @@ async function handleMessage(
   /*
    * Group protection
    */
-  if (
-    isGroup(jid)
-  ) {
+  if (isGroup(jid)) {
     const blockedByProtection =
       await handleGroupProtection(
         msg,
@@ -3594,9 +3001,7 @@ async function handleMessage(
         text
       );
 
-    if (
-      blockedByProtection
-    ) {
+    if (blockedByProtection) {
       return;
     }
   }
@@ -3625,9 +3030,7 @@ async function handleMessage(
    * Bot command
    */
   if (
-    text.startsWith(
-      PREFIX
-    )
+    text.startsWith(PREFIX)
   ) {
     await commandHandler(
       msg,
@@ -3639,9 +3042,7 @@ async function handleMessage(
 }
 
 async function startBot() {
-  if (
-    starting
-  ) {
+  if (starting) {
     return;
   }
 
@@ -3663,14 +3064,22 @@ async function startBot() {
         AUTH_DIR
       );
 
+    /*
+     * Keep auth state available to the
+     * web pairing API.
+     */
+    authState = {
+      state,
+      saveCreds
+    };
+
     sock =
       makeWASocket({
         auth: state,
 
         logger:
           P({
-            level:
-              "silent"
+            level: "silent"
           }),
 
         browser:
@@ -3702,16 +3111,13 @@ async function startBot() {
         messages
       }) => {
         for (
-          const message of
-            messages
+          const message of messages
         ) {
           try {
             await handleMessage(
               message
             );
-          } catch (
-            error
-          ) {
+          } catch (error) {
             console.error(
               "Message handler error:",
               error?.message ||
@@ -3729,9 +3135,7 @@ async function startBot() {
           await handleParticipantsUpdate(
             update
           );
-        } catch (
-          error
-        ) {
+        } catch (error) {
           console.error(
             "Participant update error:",
             error?.message ||
@@ -3761,6 +3165,12 @@ async function startBot() {
 
           lastConnectionError =
             "";
+
+          pairingBusy =
+            false;
+
+          pairingCode =
+            null;
 
           console.log(
             `${BOT_NAME} connected successfully.`
@@ -3800,8 +3210,12 @@ async function startBot() {
             DisconnectReason.loggedOut
           ) {
             console.log(
-              "WhatsApp session logged out. Delete auth_info_baileys before pairing again."
+              "WhatsApp session logged out. A fresh pairing requires the old auth session to be cleared."
             );
+
+            pairingBusy =
+              false;
+
             return;
           }
 
@@ -3815,67 +3229,14 @@ async function startBot() {
     );
 
     /*
-     * Pairing code:
-     * Existing session থাকলে pairing request করবে না।
+     * Pairing code is requested ONLY from
+     * the web panel.
+     *
+     * This prevents startup pairing and
+     * web pairing from competing for the
+     * same WhatsApp session/code.
      */
-    if (
-      !state.creds.registered &&
-      OWNER_NUMBER
-    ) {
-      await sleep(
-        3000
-      );
-
-      try {
-        pairingBusy =
-          true;
-
-        pairingNumber =
-          OWNER_NUMBER;
-
-        pairingCode =
-          await sock.requestPairingCode(
-            OWNER_NUMBER
-          );
-
-        pairingCode =
-          String(
-            pairingCode || ""
-          ).replace(
-            /(.{4})/g,
-            "$1-"
-          ).replace(
-            /-$/,
-            ""
-          );
-
-        console.log(
-          "Pairing code:",
-          pairingCode
-        );
-      } catch (
-        error
-      ) {
-        pairingCode =
-          null;
-
-        lastConnectionError =
-          error?.message ||
-          "Pairing failed";
-
-        console.error(
-          "Pairing error:",
-          error?.message ||
-            error
-        );
-      } finally {
-        pairingBusy =
-          false;
-      }
-    }
-  } catch (
-    error
-  ) {
+  } catch (error) {
     starting =
       false;
 
@@ -3896,10 +3257,7 @@ async function startBot() {
       10000
     );
   }
-    }// ============================================================
-// PART 5/5 — WEB PANEL + PAIRING + SERVER START
-// ============================================================
-
+}
 function pageHtml() {
   const code = pairingCode || "WAITING";
   const number = pairingNumber || "";
@@ -3911,7 +3269,6 @@ function pageHtml() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${BOT_NAME} • Pairing</title>
-
   <style>
     * {
       box-sizing: border-box;
@@ -4039,11 +3396,8 @@ function pageHtml() {
     }
   </style>
 </head>
-
 <body>
-
   <div class="card">
-
     <img
       class="logo"
       src="${MENU_IMG}"
@@ -4093,18 +3447,14 @@ function pageHtml() {
     <div class="footer">
       ${BOT_NAME} • ${OWNER_NAME}
     </div>
-
   </div>
 
 <script>
-
 async function pair() {
-
   const input = document.getElementById("number");
   const button = document.getElementById("pairBtn");
   const status = document.getElementById("status");
   const code = document.getElementById("code");
-
   const number = input.value.trim();
 
   if (!number) {
@@ -4117,7 +3467,6 @@ async function pair() {
   status.textContent = "Requesting pairing code...";
 
   try {
-
     const response = await fetch("/api/pair", {
       method: "POST",
       headers: {
@@ -4131,33 +3480,22 @@ async function pair() {
     const data = await response.json();
 
     if (data.success) {
-
       code.textContent = data.code || "WAITING";
-
       status.textContent =
         data.message || "Pairing code generated.";
-
     } else {
-
       status.textContent =
         data.error || "Unable to generate pairing code.";
-
     }
-
   } catch (error) {
-
-    status.textContent =
-      "Server connection failed.";
-
+    status.textContent = "Server connection failed.";
   }
 
   button.disabled = false;
   button.textContent = "GET PAIRING CODE";
 }
 
-
 async function copyCode() {
-
   const code =
     document.getElementById("code").textContent.trim();
 
@@ -4166,25 +3504,18 @@ async function copyCode() {
   }
 
   try {
-
     await navigator.clipboard.writeText(code);
 
     document.getElementById("status").textContent =
       "Pairing code copied.";
-
   } catch (error) {
-
     document.getElementById("status").textContent =
       "Copy failed. Copy it manually.";
-
   }
 }
 
-
 async function updateStatus() {
-
   try {
-
     const response =
       await fetch("/api/pair/status");
 
@@ -4200,189 +3531,99 @@ async function updateStatus() {
       document.getElementById("status").textContent =
         data.message;
     }
-
-  } catch (error) {
-    // Ignore temporary polling errors.
-  }
+  } catch (error) {}
 }
 
-
 setInterval(updateStatus, 3000);
-
 </script>
-
 </body>
 </html>
 `;
 }
 
-
-// ------------------------------------------------------------
-// HOME PAGE
-// ------------------------------------------------------------
-
 app.get("/", (req, res) => {
-
-  res.status(200).send(
-    pageHtml()
-  );
-
+  res.status(200).send(pageHtml());
 });
-
-
-// ------------------------------------------------------------
-// HEALTH CHECK
-// ------------------------------------------------------------
 
 app.get("/health", (req, res) => {
-
   res.status(200).json({
-
     success: true,
-
     bot: BOT_NAME,
-
     online: botOnline,
-
     pairing: Boolean(pairingBusy),
-
-    uptime: Math.floor(
-      process.uptime()
-    ),
-
-    timestamp:
-      new Date().toISOString()
-
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
   });
-
 });
-
-
-// ------------------------------------------------------------
-// STATUS API
-// ------------------------------------------------------------
 
 app.get("/status", (req, res) => {
-
   res.status(200).json({
-
     bot: BOT_NAME,
-
     owner: OWNER_NAME,
-
     online: botOnline,
-
     pairingBusy,
-
     pairingNumber,
-
     pairingCode,
-
-    uptime:
-      formatDuration(
-        Math.floor(process.uptime())
-      ),
-
-    error:
-      lastConnectionError || null
-
+    uptime: formatDuration(
+      Math.floor(process.uptime())
+    ),
+    error: lastConnectionError || null
   });
-
 });
 
-
-// ------------------------------------------------------------
-// PAIR STATUS API
-// ------------------------------------------------------------
-
 app.get("/api/pair/status", (req, res) => {
-
   res.status(200).json({
-
     success: true,
-
     online: botOnline,
-
     busy: pairingBusy,
-
     number: pairingNumber,
-
     code: pairingCode,
-
     message:
       pairingBusy
         ? "Generating pairing code..."
         : pairingCode
           ? "Pairing code ready."
           : "Ready for pairing."
-
   });
-
 });
 
-
-// ------------------------------------------------------------
-// PAIRING API
-// ------------------------------------------------------------
-
 app.post("/api/pair", async (req, res) => {
-
   if (pairingBusy) {
-
     return res.status(429).json({
-
       success: false,
-
       error:
         "A pairing request is already running. Please wait."
-
     });
-
   }
 
   if (!sock) {
-
     return res.status(503).json({
-
       success: false,
-
       error:
         "WhatsApp connection is not ready yet."
-
     });
-
   }
 
-  let number =
+  const number =
     cleanNumber(
       req.body &&
       req.body.number
     );
 
   if (!number) {
-
     return res.status(400).json({
-
       success: false,
-
       error:
         "Enter a valid WhatsApp number."
-
     });
-
   }
 
   if (number.length < 8 || number.length > 15) {
-
     return res.status(400).json({
-
       success: false,
-
       error:
         "Invalid phone number length."
-
     });
-
   }
 
   pairingBusy = true;
@@ -4390,161 +3631,81 @@ app.post("/api/pair", async (req, res) => {
   pairingCode = "";
 
   try {
-
-    if (sock.authState &&
-        sock.authState.creds &&
-        sock.authState.creds.registered) {
-
+    if (authState?.state?.creds?.registered) {
       pairingBusy = false;
 
       return res.status(409).json({
-
         success: false,
-
         error:
           "This WhatsApp session is already registered. Unlink the linked device before requesting a new pairing code."
-
       });
-
     }
 
-
     const rawCode =
-      await sock.requestPairingCode(
-        number
-      );
-
+      await sock.requestPairingCode(number);
 
     pairingCode =
       String(rawCode || "")
         .replace(/(.{4})/g, "$1-")
         .replace(/-$/, "");
 
-
     pairingBusy = false;
 
-
     return res.status(200).json({
-
       success: true,
-
       code: pairingCode,
-
       number: pairingNumber,
-
       message:
         "Pairing code generated. Enter it in WhatsApp Linked Devices."
-
     });
 
   } catch (error) {
-
     pairingBusy = false;
 
     lastConnectionError =
-      error &&
-      error.message
+      error && error.message
         ? error.message
         : String(error);
 
-
     return res.status(500).json({
-
       success: false,
-
-      error:
-        lastConnectionError
-
+      error: lastConnectionError
     });
-
   }
-
 });
-
-
-// ------------------------------------------------------------
-// 404
-// ------------------------------------------------------------
 
 app.use((req, res) => {
-
   res.status(404).json({
-
     success: false,
-
     error: "Route not found."
-
   });
-
 });
 
-
-// ------------------------------------------------------------
-// EXPRESS ERROR HANDLER
-// ------------------------------------------------------------
-
 app.use((err, req, res, next) => {
-
-  console.error(
-    "WEB ERROR:",
-    err
-  );
+  console.error("WEB ERROR:", err);
 
   if (res.headersSent) {
     return next(err);
   }
 
   res.status(500).json({
-
     success: false,
-
-    error:
-      "Internal server error."
-
+    error: "Internal server error."
   });
-
 });
 
+process.on("uncaughtException", (error) => {
+  console.error("UNCAUGHT EXCEPTION:", error);
+});
 
-// ------------------------------------------------------------
-// PROCESS ERROR HANDLERS
-// ------------------------------------------------------------
-
-process.on(
-  "uncaughtException",
-  (error) => {
-
-    console.error(
-      "UNCAUGHT EXCEPTION:",
-      error
-    );
-
-  }
-);
-
-
-process.on(
-  "unhandledRejection",
-  (error) => {
-
-    console.error(
-      "UNHANDLED REJECTION:",
-      error
-    );
-
-  }
-);
-
-
-// ------------------------------------------------------------
-// START WEB SERVER
-// ------------------------------------------------------------
+process.on("unhandledRejection", (error) => {
+  console.error("UNHANDLED REJECTION:", error);
+});
 
 app.listen(
   PORT,
   "0.0.0.0",
   () => {
-
     console.log(
       `🌐 ${BOT_NAME} website running on port ${PORT}`
     );
@@ -4552,33 +3713,18 @@ app.listen(
     console.log(
       `🔗 Pairing panel: http://0.0.0.0:${PORT}`
     );
-
   }
 );
 
-
-// ------------------------------------------------------------
-// START WHATSAPP BOT
-// ------------------------------------------------------------
-
 startBot()
   .then(() => {
-
     console.log(
       `🚀 ${BOT_NAME} startup complete`
     );
-
   })
   .catch((error) => {
-
     console.error(
       "BOT START ERROR:",
       error
     );
-
   });
-
-
-// ============================================================
-// END OF BK-BABU BOT
-// ============================================================
