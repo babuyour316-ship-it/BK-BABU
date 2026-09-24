@@ -3663,7 +3663,7 @@ sock =
   }) => {
 
     console.log(
-      `📩 messages.upsert received | type=${type} | count=${messages?.length || 0}`
+      `📩 messages.upsert | type=${type} | count=${messages?.length || 0}`
     );
 
     if (
@@ -3673,15 +3673,29 @@ sock =
     }
 
     for (
-      const message of
-        messages || []
+      const message of messages || []
     ) {
 
       try {
 
+        const jid =
+          message?.key?.remoteJid || "";
+
+        const fromMe =
+          message?.key?.fromMe || false;
+
+        const text =
+          getText(
+            message?.message || {}
+          );
+
         console.log(
-          `📨 Message received from: ${message?.key?.remoteJid || "unknown"}`
+          `📨 Incoming | jid=${jid} | fromMe=${fromMe} | text="${text}"`
         );
+
+        if (!jid) {
+          continue;
+        }
 
         await handleMessage(
           message
@@ -3692,7 +3706,7 @@ sock =
       ) {
 
         console.error(
-          "Message handler error:",
+          "❌ Message handler error:",
           error?.message ||
             error
         );
