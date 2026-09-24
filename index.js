@@ -796,9 +796,10 @@ function resetWarning(
 }
 
 function containsLink(text) {
-  return /https?:\/\/|www\.|chat\.whatsapp\.com\/|t\.me\/|discord\.gg\//i.test(
-    text
-  );
+  if (!text) return false;
+
+  return /\b(?:https?:\/\/|www\.)\S+/i.test(text) ||
+    /\b(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/\S*)?/i.test(text);
 }
 
 function containsBadWord(
@@ -2487,21 +2488,22 @@ ${data.extract || "No summary found."}
       return;
     }
 
-    const value =
-      parseOnOff(
-        args[0]
-      );
+    let value;
 
-    if (
-      value === null
-    ) {
-      await reply(
-        jid,
-        `⚙️ ব্যবহার:\n${PREFIX}${command} on\nঅথবা\n${PREFIX}${command} off`,
-        quoted
-      );
-      return;
-    }
+if (!args[0]) {
+  value = true;
+} else {
+  value = parseOnOff(args[0]);
+}
+
+if (value === null) {
+  await reply(
+    jid,
+    `⚙️ ব্যবহার:\n${PREFIX}${command}\nঅথবা\n${PREFIX}${command} off`,
+    quoted
+  );
+  return;
+}
 
     groupSettings[
       command
@@ -3007,32 +3009,68 @@ async function handleGroupProtection(
   }
 
   /*
-   * Anti-link
-   */
-  if (
-    cfg.antilink &&
-    containsLink(text)
-  ) {
-    try {
-      await sock.sendMessage(
-        jid,
-        {
-          delete:
-            msg.key
-        }
-      );
-    } catch {}
+ * Anti-link
+ */
+if (
+  cfg.antilink &&
+  containsLink(text)
+) {
 
-    await reply(
+  // Bot must be a group admin
+  if (!(await botIsAdmin(jid))) {
+    return false;
+  }
+
+  // Delete the link message
+  try {
+    await sock.sendMessage(
       jid,
-      `🚫 @${senderNumber(
-        sender
-      )} links are not allowed here.`,
-      null
+      {
+        delete: msg.key
+      }
+    );
+  } catch {}
+
+  // Remove the person who sent the link
+  try {
+    await sock.groupParticipantsUpdate(
+      jid,
+      [sender],
+      "remove"
     );
 
-    return true;
+    await sock.sendMessage(
+      jid,
+      {
+        text:
+          `🚫 @${senderNumber(sender)} removed.\n🔗 Link sending is not allowed in this group.`,
+        mentions: [
+          sender
+        ]
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ Anti-link remove error:",
+      error?.message || error
+    );
+
+    await sock.sendMessage(
+      jid,
+      {
+        text:
+          `⚠️ @${senderNumber(sender)} link detected, but I couldn't remove the user.`,
+        mentions: [
+          sender
+        ]
+      }
+    );
   }
+
+  return true;
+}
 
   /*
    * Anti-mention
