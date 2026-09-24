@@ -3641,8 +3641,6 @@ sock =
       Browsers.ubuntu(
         BOT_NAME
       ),
-    countryCode:
-      "OM",
     printQRInTerminal:
       false,
     markOnlineOnConnect:
