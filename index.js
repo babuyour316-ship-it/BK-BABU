@@ -3108,10 +3108,6 @@ if (
   return true;
 }
 
-  const mentions =
-  mentionedUsers(
-    message
-  );
     /*
    * Anti-Status-Mention
    * WhatsApp Story/Status থেকে Group Mention আটকাবে।
@@ -3156,10 +3152,6 @@ if (
     return true;
   }
 
-  const mentions =
-  mentionedUsers(
-    message
-  );
     /*
    * Anti-sticker
    * Normal sticker message block করবে।
