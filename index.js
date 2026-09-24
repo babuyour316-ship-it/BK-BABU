@@ -3721,123 +3721,147 @@ sock =
     );
 
     sock.ev.on(
-      "connection.update",
-      async update => {
-        const {
-          connection,
-          lastDisconnect
-        } = update;
+  "connection.update",
+  async update => {
 
-        if (
-          connection ===
-          "open"
-        ) {
-          botOnline =
-            true;
+    const {
+      connection,
+      lastDisconnect
+    } = update;
 
-          starting =
-            false;
+    console.log(
+      "🔌 WhatsApp connection update:",
+      connection || "no connection state"
+    );
 
-          lastConnectionError =
-            "";
+    if (
+      connection ===
+      "open"
+    ) {
+
+      botOnline =
+        true;
+
+      starting =
+        false;
+
+      lastConnectionError =
+        "";
+
+      pairingBusy =
+        false;
+
+      console.log(
+        `${BOT_NAME} connected successfully.`
+      );
+
+      return;
+    }
+
+    if (
+      connection ===
+      "close"
+    ) {
+
+      botOnline =
+        false;
+
+      starting =
+        false;
+
+      const statusCode =
+        lastDisconnect
+          ?.error
+          ?.output
+          ?.statusCode;
+
+      lastConnectionError =
+        String(
+          statusCode ||
+            "connection closed"
+        );
+
+      console.log(
+        `${BOT_NAME} connection closed: ${lastConnectionError}`
+      );
+
+      if (
+        statusCode ===
+        DisconnectReason.loggedOut
+      ) {
+
+        console.log(
+          "WhatsApp session logged out. Resetting auth session for new pairing."
+        );
+
+        try {
+
+          sock =
+            null;
+
+          authState =
+            null;
 
           pairingBusy =
             false;
 
-          console.log(
-            `${BOT_NAME} connected successfully.`
-          );
+          pairingCode =
+            null;
 
-          return;
-        }
+          pairingNumber =
+            null;
 
-        if (
-          connection ===
-          "close"
-        ) {
-          botOnline =
-            false;
-
-          starting =
-            false;
-
-          const statusCode =
-            lastDisconnect
-              ?.error
-              ?.output
-              ?.statusCode;
-
-          lastConnectionError =
-            String(
-              statusCode ||
-                "connection closed"
-            );
-
-          console.log(
-            `${BOT_NAME} connection closed: ${lastConnectionError}`
-          );
-
-           if (
-            statusCode ===
-            DisconnectReason.loggedOut
+          if (
+            fs.existsSync(
+              AUTH_DIR
+            )
           ) {
-            console.log(
-              "WhatsApp session logged out. Resetting auth session for new pairing."
-            );
 
-            try {
-              sock = null;
-              authState = null;
-
-              pairingBusy = false;
-              pairingCode = null;
-              pairingNumber = null;
-
-              if (
-                fs.existsSync(
-                  AUTH_DIR
-                )
-              ) {
-                fs.rmSync(
-                  AUTH_DIR,
-                  {
-                    recursive: true,
-                    force: true
-                  }
-                );
+            fs.rmSync(
+              AUTH_DIR,
+              {
+                recursive:
+                  true,
+                force:
+                  true
               }
-
-              console.log(
-                "Old WhatsApp auth session deleted."
-              );
-
-            } catch (
-              resetError
-            ) {
-              console.error(
-                "Auth reset error:",
-                resetError?.message ||
-                  resetError
-              );
-            }
-
-            await sleep(
-              2000
             );
 
-            startBot();
+          }
 
-            return;
-                    }
-
-          await sleep(
-            5000
+          console.log(
+            "Old WhatsApp auth session deleted."
           );
 
-          startBot();
+        } catch (
+          resetError
+        ) {
+
+          console.error(
+            "Auth reset error:",
+            resetError?.message ||
+              resetError
+          );
+
         }
+
+        await sleep(
+          2000
+        );
+
+        startBot();
+
+        return;
       }
-    );
+
+      await sleep(
+        5000
+      );
+
+      startBot();
+    }
+  }
+);
   } catch (
     error
   ) {
