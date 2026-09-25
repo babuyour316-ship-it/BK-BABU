@@ -1964,6 +1964,48 @@ const hasMedia =
     source.videoMessage
   );
 
+            if (
+        quotedMessage &&
+        hasMedia
+      ) {
+        sourceMessage = {
+          ...sourceMessage,
+          message:
+            source
+        };
+
+        await sendGroupStatus(
+          jid,
+          sourceMessage,
+          caption
+        );
+      } else {
+        const statusText =
+          argText ||
+          getText(
+            source
+          );
+
+        if (!statusText) {
+          await reply(
+            jid,
+            `❌ Example:\n${PREFIX}gstatus Hello ❤️\n\n📷 Photo/Video-তে Reply করে ${PREFIX}gstatus লিখতে পারো।`,
+            quoted
+          );
+          return;
+        }
+
+        await sendGroupStatus(
+          jid,
+          {
+            message: {
+              conversation:
+                statusText
+            }
+          },
+          statusText
+        );
+            }
         const statusText =
           argText ||
           getText(
