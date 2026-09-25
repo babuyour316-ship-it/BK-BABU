@@ -1979,7 +1979,6 @@ const hasMedia =
     sourceMessage,
     caption
   );
-      }
       } else {
         const statusText =
           argText ||
