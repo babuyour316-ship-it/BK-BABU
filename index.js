@@ -1964,22 +1964,7 @@ const hasMedia =
     source.videoMessage
   );
 
-      if (
-  quotedMessage &&
-  hasMedia
-) {
-  sourceMessage = {
-    ...sourceMessage,
-    message:
-      source
-  };
-
-  await sendGroupStatus(
-    jid,
-    sourceMessage,
-    caption
-  );
-      } else {
+      
         const statusText =
           argText ||
           getText(
