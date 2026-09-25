@@ -1964,14 +1964,21 @@ const hasMedia =
   );
 
       if (
-        quotedMessage &&
-        hasMedia
-      ) {
-        await sendGroupStatus(
-          jid,
-          sourceMessage,
-          caption
-        );
+  quotedMessage &&
+  hasMedia
+) {
+  sourceMessage = {
+    ...sourceMessage,
+    message:
+      source
+  };
+
+  await sendGroupStatus(
+    jid,
+    sourceMessage,
+    caption
+  );
+      }
       } else {
         const statusText =
           argText ||
