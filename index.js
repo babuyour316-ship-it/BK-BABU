@@ -1915,28 +1915,53 @@ ${data.extract || "No summary found."}
         };
       }
 
-      const source =
-        sourceMessage?.message ||
-        {};
+      const rawSource =
+  sourceMessage?.message ||
+  {};
 
-      if (
-        source.viewOnceMessage ||
-        source.viewOnceMessageV2 ||
-        source.viewOnceMessageV2Extension
-      ) {
-        await reply(
-          jid,
-          "❌ View Once / One-Time media Group Status-এ পাঠানো যাবে না।",
-          quoted
-        );
-        return;
-      }
+if (
+  rawSource.viewOnceMessage ||
+  rawSource.viewOnceMessageV2 ||
+  rawSource.viewOnceMessageV2Extension
+) {
+  await reply(
+    jid,
+    "❌ View Once / One-Time media Group Status-এ পাঠানো যাবে না।",
+    quoted
+  );
+  return;
+}
 
-      const hasMedia =
-        !!(
-          source.imageMessage ||
-          source.videoMessage
-        );
+let source =
+  rawSource;
+
+for (
+  let i = 0;
+  i < 5;
+  i++
+) {
+  const inner =
+    source?.ephemeralMessage?.message ||
+    source?.viewOnceMessage?.message ||
+    source?.viewOnceMessageV2?.message ||
+    source?.viewOnceMessageV2Extension?.message ||
+    source?.documentWithCaptionMessage?.message ||
+    source?.editedMessage?.message ||
+    source?.associatedChildMessage?.message;
+
+  if (!inner) {
+    break;
+  }
+
+  source =
+    inner;
+}
+
+const hasMedia =
+  !!(
+    source.imageMessage ||
+    source.videoMessage
+  );
 
       if (
         quotedMessage &&
