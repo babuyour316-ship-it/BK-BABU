@@ -976,9 +976,17 @@ const mediaMessage =
         ? "image"
         : "video";
 
+        const mediaSourceMessage = {
+      ...sourceMessage,
+      message: {
+        [mediaType + "Message"]:
+          mediaMessage
+      }
+    };
+
     const buffer =
       await downloadMediaMessage(
-        sourceMessage,
+        mediaSourceMessage,
         "buffer",
         {},
         {
