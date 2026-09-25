@@ -1862,7 +1862,142 @@ ${data.extract || "No summary found."}
 
     return;
   }
+  if (
+    command === "gstatus" ||
+    command === "gs"
+  ) {
+    if (!group) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু Group-এ ব্যবহার করা যাবে।",
+        quoted
+      );
+      return;
+    }
 
+    try {
+      const currentMessage =
+        msg?.message || {};
+
+      const context =
+        getContext(
+          currentMessage
+        );
+
+      const quotedMessage =
+        getQuoted(
+          currentMessage
+        );
+
+      let sourceMessage =
+        msg;
+
+      let caption =
+        argText;
+
+      if (
+        quotedMessage
+      ) {
+        const quotedKey = {
+          remoteJid:
+            jid,
+          id:
+            context?.stanzaId,
+          participant:
+            context?.participant,
+          fromMe:
+            false
+        };
+
+        sourceMessage = {
+          key: quotedKey,
+          message:
+            quotedMessage
+        };
+      }
+
+      const source =
+        sourceMessage?.message ||
+        {};
+
+      if (
+        source.viewOnceMessage ||
+        source.viewOnceMessageV2 ||
+        source.viewOnceMessageV2Extension
+      ) {
+        await reply(
+          jid,
+          "❌ View Once / One-Time media Group Status-এ পাঠানো যাবে না।",
+          quoted
+        );
+        return;
+      }
+
+      const hasMedia =
+        !!(
+          source.imageMessage ||
+          source.videoMessage
+        );
+
+      if (
+        quotedMessage &&
+        hasMedia
+      ) {
+        await sendGroupStatus(
+          jid,
+          sourceMessage,
+          caption
+        );
+      } else {
+        const statusText =
+          argText ||
+          getText(
+            source
+          );
+
+        if (!statusText) {
+          await reply(
+            jid,
+            `❌ Example:\n${PREFIX}gstatus Hello ❤️\n\n📷 Photo/Video-তে Reply করে ${PREFIX}gstatus লিখতে পারো।`,
+            quoted
+          );
+          return;
+        }
+
+        await sendGroupStatus(
+          jid,
+          {
+            message: {
+              conversation:
+                statusText
+            }
+          },
+          statusText
+        );
+      }
+
+      await reply(
+        jid,
+        "✅ Group Status সফলভাবে পোস্ট করা হয়েছে।",
+        quoted
+      );
+
+    } catch (error) {
+      console.error(
+        "❌ Group Status error:",
+        error?.message ||
+          error
+      );
+
+      await reply(
+        jid,
+        `❌ Group Status পোস্ট করা যায়নি।\n\n${error?.message || "Unknown error"}`,
+        quoted
+      );
+    }
+
+    return;
+            }
   if (
     command === "ai"
   ) {
