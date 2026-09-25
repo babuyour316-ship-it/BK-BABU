@@ -1964,36 +1964,11 @@ if (
   return;
 }
 
-let source =
-  rawSource;
-
-for (
-  let i = 0;
-  i < 5;
-  i++
-) {
-  const inner =
-    source?.ephemeralMessage?.message ||
-    source?.viewOnceMessage?.message ||
-    source?.viewOnceMessageV2?.message ||
-    source?.viewOnceMessageV2Extension?.message ||
-    source?.documentWithCaptionMessage?.message ||
-    source?.editedMessage?.message ||
-    source?.associatedChildMessage?.message;
-
-  if (!inner) {
-    break;
-  }
-
-  source =
-    inner;
-}
+const source =
+  unwrapMessage(rawSource);
 
 const hasMedia =
-  !!(
-    source.imageMessage ||
-    source.videoMessage
-  );
+  !!getMediaMessage(source);
 
             if (
         quotedMessage &&
