@@ -323,7 +323,38 @@ function getQuoted(message) {
     null
   );
 }
+function unwrapMessage(message) {
+  let source = message || {};
 
+  for (let i = 0; i < 8; i++) {
+    const inner =
+      source?.ephemeralMessage?.message ||
+      source?.viewOnceMessage?.message ||
+      source?.viewOnceMessageV2?.message ||
+      source?.viewOnceMessageV2Extension?.message ||
+      source?.documentWithCaptionMessage?.message ||
+      source?.editedMessage?.message ||
+      source?.associatedChildMessage?.message;
+
+    if (!inner) {
+      break;
+    }
+
+    source = inner;
+  }
+
+  return source;
+}
+
+function getMediaMessage(message) {
+  const source = unwrapMessage(message);
+
+  return (
+    source?.imageMessage ||
+    source?.videoMessage ||
+    null
+  );
+}
 function getQuotedParticipant(message) {
   return (
     getContext(message)
