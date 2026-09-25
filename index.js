@@ -914,7 +914,170 @@ function safeMath(
     return null;
   }
 }
+async function sendGroupStatus(
+  groupJid,
+  sourceMessage,
+  caption = ""
+) {
+  if (!sock) {
+    throw new Error(
+      "WhatsApp connection is not ready."
+    );
+  }
 
+  const message =
+    sourceMessage?.message || {};
+
+  const senderJid =
+    sock?.user?.id ||
+    authState?.state?.creds?.me?.id ||
+    "";
+
+  const mediaMessage =
+    message.imageMessage ||
+    message.videoMessage ||
+    null;
+
+  if (mediaMessage) {
+    const mediaType =
+      message.imageMessage
+        ? "image"
+        : "video";
+
+    const buffer =
+      await downloadMediaMessage(
+        sourceMessage,
+        "buffer",
+        {},
+        {
+          logger: P({
+            level: "silent"
+          }),
+          reuploadRequest:
+            sock.updateMediaMessage
+        }
+      );
+
+    let mediaInput;
+    let messageKey;
+
+    if (
+      mediaType ===
+      "video"
+    ) {
+      mediaInput = {
+        video: buffer,
+        mimetype:
+          mediaMessage.mimetype ||
+          "video/mp4",
+        caption
+      };
+
+      messageKey =
+        "videoMessage";
+    } else {
+      mediaInput = {
+        image: buffer,
+        mimetype:
+          mediaMessage.mimetype ||
+          "image/jpeg",
+        caption
+      };
+
+      messageKey =
+        "imageMessage";
+    }
+
+    const prepared =
+      await prepareWAMessageMedia(
+        mediaInput,
+        {
+          upload:
+            sock.waUploadToServer
+        }
+      );
+
+    prepared[
+      messageKey
+    ].contextInfo = {
+      forwardingScore: 0,
+      isGroupStatus: true,
+      pairedMediaType: 0,
+      statusSourceType: 4,
+      featureEligibilities: {
+        canBeReshared: true,
+        canReceiveMultiReact: true
+      },
+      statusAttributions: [
+        {
+          type: 10
+        }
+      ]
+    };
+
+    await sock.sendMessage(
+      groupJid,
+      prepared
+    );
+
+    return;
+  }
+
+  const text =
+    caption ||
+    getText(message) ||
+    "Group Status";
+
+  const messageContent = {
+    groupStatusMessageV2: {
+      message: {
+        extendedTextMessage: {
+          text,
+          font: 1,
+          backgroundArgb:
+            0xFF23313A,
+          contextInfo: {
+            forwardingScore: 0,
+            pairedMediaType: 0,
+            isGroupStatus: true,
+            featureEligibilities: {
+              canBeReshared: true,
+              canReceiveMultiReact: true
+            },
+            statusAttributions: [
+              {
+                type: 6,
+                groupStatus: {
+                  authorJid:
+                    senderJid
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  };
+
+  const generated =
+    generateWAMessageFromContent(
+      groupJid,
+      messageContent,
+      {
+        userJid:
+          senderJid
+      }
+    );
+
+  await sock.relayMessage(
+    groupJid,
+    generated.message,
+    {
+      messageId:
+        generated.key.id
+    }
+  );
+}
 async function commandHandler(
   msg,
   jid,
