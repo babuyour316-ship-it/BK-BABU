@@ -3634,7 +3634,7 @@ async function handleParticipantsUpdate(
     );
   }
   }
-
+}
 async function handleMessage(
   msg
 ) {
