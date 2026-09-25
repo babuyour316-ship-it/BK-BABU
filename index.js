@@ -3535,11 +3535,29 @@ async function sendGoodbye(
     return;
   }
 
+  let groupName =
+    "Our Group";
+
+  try {
+    const metadata =
+      await groupMetadata(
+        groupJid
+      );
+
+    groupName =
+      metadata?.subject ||
+      "Our Group";
+  } catch {}
+
   const text =
-    replaceUser(
-      cfg.goodbyeText,
-      userJid
-    );
+    `╭━━━〔 👋💔 GOODBYE 💔👋 〕━━━╮\n\n` +
+    `🏠 গ্রুপ: *${groupName}*\n\n` +
+    `👤 @${senderNumber(userJid)}\n\n` +
+    `😈 মাদারচোদ, তুই কোথা থেকে এসেছিলি?\n` +
+    `আবার ওইখানেই চলে গেলি! 😂🚪\n\n` +
+    `💨 যাই হোক, ভালো থাকিস।\n` +
+    `👋 আবার দেখা হবে কিনা জানি না! 😎\n\n` +
+    `╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
   try {
     await sock.sendMessage(
@@ -3551,7 +3569,13 @@ async function sendGoodbye(
         ]
       }
     );
-  } catch {}
+  } catch (error) {
+    console.error(
+      "❌ Goodbye message error:",
+      error?.message ||
+        error
+    );
+  }
 }
 
 async function handleParticipantsUpdate(
