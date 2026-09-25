@@ -3471,11 +3471,35 @@ async function sendWelcome(
     return;
   }
 
+  let groupName =
+    "Our Group";
+
+  try {
+    const metadata =
+      await groupMetadata(
+        groupJid
+      );
+
+    groupName =
+      metadata?.subject ||
+      "Our Group";
+  } catch {}
+
   const text =
-    replaceUser(
-      cfg.welcomeText,
-      userJid
-    );
+    `╭━━━〔 🎉✨ WELCOME ✨🎉 〕━━━╮\n\n` +
+    `🏠 Group: *${groupName}*\n\n` +
+    `👋 Welcome @${senderNumber(userJid)} 💐\n` +
+    `🥳 আমাদের ছোট্ট পরিবারে তোমাকে স্বাগতম! ❤️\n\n` +
+    `🌸 আশা করি সবার সাথে সুন্দরভাবে সময় কাটাবে।\n` +
+    `🤝 সবাইকে সম্মান করবে এবং সুন্দর পরিবেশ বজায় রাখবে। 🫶\n\n` +
+    `📜 ━━━ গ্রুপে থাকার আগে ━━━ 📜\n\n` +
+    `👀 আমাদের Group Bio-টা আগে ভালো করে পড়ে নাও।\n` +
+    `📖 গ্রুপের নিয়ম-কানুন জেনে ও মেনে তারপর আমাদের সাথে থেকো। 🤍\n\n` +
+    `🚫 নিয়ম ভঙ্গ করে গ্রুপের পরিবেশ নষ্ট করো না।\n` +
+    `💖 সবাই মিলে গ্রুপটাকে সুন্দর রাখি। 🌸\n\n` +
+    `✨ আবারও তোমাকে আমাদের গ্রুপে স্বাগতম! 🥰\n` +
+    `🎊 Enjoy & Stay With Us! 🎊\n\n` +
+    `╰━━━━━━━━━━━━━━━━━━━━━━╯`;
 
   try {
     await sock.sendMessage(
@@ -3487,7 +3511,13 @@ async function sendWelcome(
         ]
       }
     );
-  } catch {}
+  } catch (error) {
+    console.error(
+      "❌ Welcome message error:",
+      error?.message ||
+        error
+    );
+  }
 }
 
 async function sendGoodbye(
