@@ -3596,31 +3596,44 @@ async function handleParticipantsUpdate(
     [];
 
   for (
-    const user of participants
-  ) {
-    if (
-      action ===
-      "add"
-    ) {
-      await sendWelcome(
-        update.id,
-        user
-      );
-    }
+  const participant of participants
+) {
+  const user =
+    typeof participant === "string"
+      ? participant
+      : (
+          participant?.phoneNumber ||
+          participant?.id ||
+          participant?.lid ||
+          ""
+        );
 
-    if (
-      action ===
-        "remove" ||
-      action ===
-        "leave"
-    ) {
-      await sendGoodbye(
-        update.id,
-        user
-      );
-    }
+  if (!user) {
+    continue;
   }
-}
+
+  if (
+    action ===
+    "add"
+  ) {
+    await sendWelcome(
+      update.id,
+      user
+    );
+  }
+
+  if (
+    action ===
+      "remove" ||
+    action ===
+      "leave"
+  ) {
+    await sendGoodbye(
+      update.id,
+      user
+    );
+  }
+  }
 
 async function handleMessage(
   msg
