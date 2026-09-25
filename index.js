@@ -1041,7 +1041,7 @@ await sock.relayMessage(
 );
 
 return;
-
+  }
   const text =
     caption ||
     getText(message) ||
