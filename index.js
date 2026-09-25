@@ -989,39 +989,58 @@ async function sendGroupStatus(
     }
 
     const prepared =
-      await prepareWAMessageMedia(
-        mediaInput,
-        {
-          upload:
-            sock.waUploadToServer
-        }
-      );
+  await prepareWAMessageMedia(
+    mediaInput,
+    {
+      upload:
+        sock.waUploadToServer
+    }
+  );
 
-    prepared[
-      messageKey
-    ].contextInfo = {
-      forwardingScore: 0,
-      isGroupStatus: true,
-      pairedMediaType: 0,
-      statusSourceType: 4,
-      featureEligibilities: {
-        canBeReshared: true,
-        canReceiveMultiReact: true
-      },
-      statusAttributions: [
-        {
-          type: 10
-        }
-      ]
-    };
+prepared[
+  messageKey
+].contextInfo = {
+  forwardingScore: 0,
+  isGroupStatus: true,
+  pairedMediaType: 0,
+  statusSourceType: 4,
+  featureEligibilities: {
+    canBeReshared: true,
+    canReceiveMultiReact: true
+  },
+  statusAttributions: [
+    {
+      type: 10
+    }
+  ]
+};
 
-    await sock.sendMessage(
-      groupJid,
-      prepared
-    );
-
-    return;
+const mediaStatusContent = {
+  groupStatusMessageV2: {
+    message: prepared
   }
+};
+
+const generated =
+  generateWAMessageFromContent(
+    groupJid,
+    mediaStatusContent,
+    {
+      userJid:
+        senderJid
+    }
+  );
+
+await sock.relayMessage(
+  groupJid,
+  generated.message,
+  {
+    messageId:
+      generated.key.id
+  }
+);
+
+return;
 
   const text =
     caption ||
