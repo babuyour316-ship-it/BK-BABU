@@ -11,6 +11,8 @@ const {
   DisconnectReason,
   Browsers,
   downloadMediaMessage,
+  generateWAMessageFromContent,
+  prepareWAMessageMedia,
   fetchLatestWaWebVersion,
   areJidsSameUser
 } = require("@whiskeysockets/baileys");
