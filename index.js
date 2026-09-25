@@ -1059,9 +1059,23 @@ prepared[
   ]
 };
 
-await sock.sendMessage(
+const generated =
+  generateWAMessageFromContent(
+    groupJid,
+    prepared,
+    {
+      userJid:
+        senderJid
+    }
+  );
+
+await sock.relayMessage(
   groupJid,
-  prepared
+  generated.message,
+  {
+    messageId:
+      generated.key.id
+  }
 );
 
 return;
