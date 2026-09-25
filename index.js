@@ -958,17 +958,17 @@ async function sendGroupStatus(
   }
 
   const message =
-    sourceMessage?.message || {};
+  unwrapMessage(
+    sourceMessage?.message || {}
+  );
 
-  const senderJid =
-    sock?.user?.id ||
-    authState?.state?.creds?.me?.id ||
-    "";
+const senderJid =
+  sock?.user?.id ||
+  authState?.state?.creds?.me?.id ||
+  "";
 
-  const mediaMessage =
-    message.imageMessage ||
-    message.videoMessage ||
-    null;
+const mediaMessage =
+  getMediaMessage(message);
 
   if (mediaMessage) {
     const mediaType =
