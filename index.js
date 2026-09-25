@@ -1970,8 +1970,7 @@ const source =
 const hasMedia =
   !!getMediaMessage(source);
 
-            if (
-        quotedMessage &&
+                  if (
         hasMedia
       ) {
         sourceMessage = {
