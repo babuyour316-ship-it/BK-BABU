@@ -597,6 +597,7 @@ function menuText() {
 ┃ ${PREFIX}open / ${PREFIX}close
 ┃ ${PREFIX}setname text
 ┃ ${PREFIX}setdesc text
+┃ ${PREFIX}gstatus
 
 ┣━━〔 🛡️ SECURITY 〕━━
 ┃ ${PREFIX}antilink on/off
