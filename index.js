@@ -1964,7 +1964,6 @@ const hasMedia =
     source.videoMessage
   );
 
-      
         const statusText =
           argText ||
           getText(
