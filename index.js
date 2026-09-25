@@ -1047,28 +1047,9 @@ prepared[
   ]
 };
 
-const messageContent = {
-  groupStatusMessageV2: {
-    message: prepared
-  }
-};
-
-const generated =
-  generateWAMessageFromContent(
-    groupJid,
-    messageContent,
-    {
-      userJid: senderJid
-    }
-  );
-
-await sock.relayMessage(
+await sock.sendMessage(
   groupJid,
-  generated.message,
-  {
-    messageId:
-      generated.key.id
-  }
+  prepared
 );
 
 return;
