@@ -11,6 +11,7 @@ const {
   DisconnectReason,
   Browsers,
   downloadMediaMessage,
+  downloadContentFromMessage,
   generateWAMessageFromContent,
   prepareWAMessageMedia,
   fetchLatestWaWebVersion,
@@ -984,19 +985,22 @@ const mediaMessage =
       }
     };
 
-    const buffer =
-      await downloadMediaMessage(
-        mediaSourceMessage,
-        "buffer",
-        {},
-        {
-          logger: P({
-            level: "silent"
-          }),
-          reuploadRequest:
-            sock.updateMediaMessage
-        }
+        const mediaStream =
+      await downloadContentFromMessage(
+        mediaMessage,
+        mediaType
       );
+
+    const chunks = [];
+
+    for await (
+      const chunk of mediaStream
+    ) {
+      chunks.push(chunk);
+    }
+
+    const buffer =
+      Buffer.concat(chunks);
 
     let mediaInput;
     let messageKey;
