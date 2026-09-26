@@ -640,6 +640,7 @@ function menuText() {
 ┃ ${PREFIX}kick @user
 ┃ ${PREFIX}kickall
 ┃ ${PREFIX}add number
+┃ ${PREFIX}alladd group-link
 ┃ ${PREFIX}promote @user
 ┃ ${PREFIX}demote @user
 ┃ ${PREFIX}mute / ${PREFIX}unmute
