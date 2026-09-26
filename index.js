@@ -610,7 +610,7 @@ function formatDuration(ms) {
 
 function menuText() {
   return `
-╭━━━〔 🤖 ${BOT_NAME} 〕━━━╮
+╭━━━〔 🖕 ${BOT_NAME} 〕━━━╮
 ┃ 👑 Owner : ${OWNER_NAME}
 ┃ ⚡ Prefix : ${PREFIX}
 ┃ 📡 Status : ${
