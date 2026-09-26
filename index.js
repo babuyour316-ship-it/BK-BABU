@@ -1192,7 +1192,96 @@ async function commandHandler(
   ) {
     return;
   }
+  const commandReactions = {
+    menu: "📋",
+    start: "📋",
+    help: "📚",
+    ping: "🏓",
+    alive: "🟢",
+    about: "ℹ️",
+    owner: "👑",
+    botinfo: "🤖",
+    status: "📡",
 
+    groupinfo: "👥",
+    groupid: "🆔",
+    admins: "👑",
+    members: "👥",
+    tagall: "📢",
+    hidetag: "🙈",
+    everyone: "📢",
+    kick: "👢",
+    add: "➕",
+    promote: "⬆️",
+    demote: "⬇️",
+    mute: "🔇",
+    unmute: "🔊",
+    open: "🔓",
+    close: "🔒",
+    setname: "✏️",
+    setdesc: "📝",
+    gstatus: "📢",
+
+    antilink: "🛡️",
+    antimention: "🛡️",
+    antispam: "🛡️",
+    antiflood: "🌊",
+    antibadword: "🚫",
+    antisticker: "🚫",
+    warn: "⚠️",
+    warnings: "📋",
+    resetwarn: "🔄",
+
+    welcome: "👋",
+    goodbye: "👋",
+    setwelcome: "💬",
+    setgoodbye: "💬",
+
+    autoread: "👀",
+    autoreact: "❤️",
+
+    calc: "🧮",
+    time: "⏰",
+    weather: "🌤️",
+    translate: "🌐",
+    define: "📖",
+    ytsearch: "🔎",
+    wiki: "📚",
+    short: "🔗",
+    qr: "📱",
+
+    play: "🎵",
+    song: "🎵",
+    sticker: "🖼️",
+
+    ai: "🤖",
+
+    block: "🚫",
+    unblock: "✅",
+    restart: "🔄",
+    botoff: "⏹️",
+    boton: "▶️"
+  };
+
+  const reaction =
+    commandReactions[command];
+
+  if (
+    reaction &&
+    msg?.key
+  ) {
+    try {
+      await sock.sendMessage(
+        jid,
+        {
+          react: {
+            text: reaction,
+            key: msg.key
+          }
+        }
+      );
+    } catch {}
+  }
   if (
     command === "menu" ||
     command === "start"
