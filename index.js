@@ -81,6 +81,11 @@ const BLOCK_FILE = path.join(
   "blocked.json"
 );
 
+const AUTOSTATUS_FILE = path.join(
+  DATA_DIR,
+  "autostatus.json"
+);
+
 fs.mkdirSync(DATA_DIR, {
   recursive: true
 });
@@ -133,6 +138,12 @@ let blocked =
       BLOCK_FILE,
       []
     )
+  );
+
+let autoStatus =
+  !!readJson(
+    AUTOSTATUS_FILE,
+    false
   );
 
 function saveSettings() {
@@ -1185,6 +1196,38 @@ async function commandHandler(
     group
       ? getSettings(jid)
       : null;
+    if (
+    command === "autostatus"
+  ) {
+    const value =
+      parseOnOff(args[0]);
+
+    if (value === null) {
+      await reply(
+        jid,
+        `❌ ব্যবহার:\n${PREFIX}autostatus on\n${PREFIX}autostatus off`,
+        quoted
+      );
+      return;
+    }
+
+    autoStatus = value;
+
+    writeJson(
+      AUTOSTATUS_FILE,
+      autoStatus
+    );
+
+    await reply(
+      jid,
+      autoStatus
+        ? "✅ Auto Status ON হয়েছে।\n👀 নতুন Status এলে bot read/view করার চেষ্টা করবে এবং reaction দেওয়ার চেষ্টা করবে।"
+        : "❌ Auto Status OFF হয়েছে।",
+      quoted
+    );
+
+    return;
+    }
 
   if (
     blocked.has(
