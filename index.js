@@ -3186,7 +3186,7 @@ if (value === null) {
     return;
   }
 
-  if (
+    if (
     command === "block"
   ) {
     if (!isOwner(sender)) {
@@ -3225,22 +3225,29 @@ if (value === null) {
       return;
     }
 
-    blocked.add(
-      target
-    );
+    try {
+      await sock.updateBlockStatus(
+        target,
+        "block"
+      );
 
-    saveBlocked();
-
-    await reply(
-      jid,
-      `🚫 @${senderNumber(
-        target
-      )} blocked from bot commands.`,
-      quoted
-    );
+      await reply(
+        jid,
+        `🚫 @${senderNumber(
+          target
+        )} successfully blocked.`,
+        quoted
+      );
+    } catch (error) {
+      await reply(
+        jid,
+        `❌ Block করা যায়নি.\n${error?.message || "Unknown error"}`,
+        quoted
+      );
+    }
 
     return;
-  }
+    }
 
   if (
     command === "unblock"
