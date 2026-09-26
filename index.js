@@ -248,10 +248,21 @@ function senderNumber(jid) {
 }
 
 function isOwner(jid) {
-  return (
+  const ownerByNumber =
     !!OWNER_NUMBER &&
     senderNumber(jid) ===
-      OWNER_NUMBER
+      OWNER_NUMBER;
+
+  const ownerByBotAccount =
+    !!sock?.user?.id &&
+    areJidsSameUser(
+      jid,
+      sock.user.id
+    );
+
+  return (
+    ownerByNumber ||
+    ownerByBotAccount
   );
 }
 
