@@ -638,6 +638,7 @@ function menuText() {
 ┃ ${PREFIX}hidetag text
 ┃ ${PREFIX}everyone
 ┃ ${PREFIX}kick @user
+┃ ${PREFIX}kickall
 ┃ ${PREFIX}add number
 ┃ ${PREFIX}promote @user
 ┃ ${PREFIX}demote @user
@@ -1211,6 +1212,7 @@ async function commandHandler(
     hidetag: "🙈",
     everyone: "📢",
     kick: "👢",
+    kickall: "👢",
     add: "➕",
     promote: "⬆️",
     demote: "⬇️",
