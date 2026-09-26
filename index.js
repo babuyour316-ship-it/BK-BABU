@@ -2594,6 +2594,116 @@ const hasMedia =
     return;
   }
 
+    if (
+    command === "kickall" ||
+    command === "allkick"
+  ) {
+    if (!group) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু গ্রুপে ব্যবহার করা যাবে।",
+        quoted
+      );
+      return;
+    }
+
+    const allowed =
+      await safeGroupAdmin(
+        jid,
+        sender,
+        jid,
+        quoted
+      );
+
+    if (!allowed) {
+      return;
+    }
+
+    const senderAdmin =
+      isOwner(sender) ||
+      await isAdmin(
+        jid,
+        sender
+      );
+
+    if (!senderAdmin) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু Group Admin/Owner ব্যবহার করতে পারবে।",
+        quoted
+      );
+      return;
+    }
+
+    const metadata =
+      await groupMetadata(
+        jid
+      );
+
+    if (!metadata) {
+      return;
+    }
+
+    const targets =
+      metadata.participants
+        .filter(
+          p =>
+            !p.admin &&
+            p.id !== sock.user.id &&
+            p.id !== sender
+        )
+        .map(
+          p => p.id
+        );
+
+    if (!targets.length) {
+      await reply(
+        jid,
+        "ℹ️ Remove করার মতো কোনো সাধারণ member নেই।",
+        quoted
+      );
+      return;
+    }
+
+    await reply(
+      jid,
+      `⚠️ ${targets.length} জন member remove করা হচ্ছে...`,
+      quoted
+    );
+
+    let removed = 0;
+
+    for (
+      let i = 0;
+      i < targets.length;
+      i += 5
+    ) {
+      const batch =
+        targets.slice(
+          i,
+          i + 5
+        );
+
+      try {
+        await sock.groupParticipantsUpdate(
+          jid,
+          batch,
+          "remove"
+        );
+
+        removed +=
+          batch.length;
+      } catch {}
+    }
+
+    await reply(
+      jid,
+      `✅ Kick All complete.\n👥 Removed: ${removed}`,
+      quoted
+    );
+
+    return;
+    }
   if (
     command === "kick"
   ) {
