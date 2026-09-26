@@ -3239,14 +3239,7 @@ if (value === null) {
   if (
     command === "unblock"
   ) {
-    if (!isOwner(sender)) {
-      await reply(
-        jid,
-        "❌ Owner only command.",
-        quoted
-      );
-      return;
-    }
+    
 
     const target =
       getTarget(
