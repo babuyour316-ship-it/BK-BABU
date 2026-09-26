@@ -709,23 +709,6 @@ async function safeGroupAdmin(
     return false;
   }
 
-  if (!isOwner(sender)) {
-    const admin =
-      await isAdmin(
-        jid,
-        sender
-      );
-
-    if (!admin) {
-      await reply(
-        replyJid,
-        "❌ এই কমান্ড ব্যবহার করতে হলে তোমাকে Group Admin হতে হবে।",
-        quoted
-      );
-      return false;
-    }
-  }
-
   if (
     !(await botIsAdmin(jid))
   ) {
