@@ -3248,7 +3248,7 @@ if (value === null) {
 
     return;
     }
-
+  
   if (
     command === "unblock"
   ) {
@@ -3276,19 +3276,26 @@ if (value === null) {
       return;
     }
 
-    blocked.delete(
-      target
-    );
+    try {
+      await sock.updateBlockStatus(
+        target,
+        "unblock"
+      );
 
-    saveBlocked();
-
-    await reply(
-      jid,
-      `✅ @${senderNumber(
-        target
-      )} unblocked.`,
-      quoted
-    );
+      await reply(
+        jid,
+        `✅ @${senderNumber(
+          target
+        )} successfully unblocked.`,
+        quoted
+      );
+    } catch (error) {
+      await reply(
+        jid,
+        `❌ Unblock করা যায়নি.\n${error?.message || "Unknown error"}`,
+        quoted
+      );
+    }
 
     return;
   }
