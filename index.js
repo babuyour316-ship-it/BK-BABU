@@ -1561,47 +1561,104 @@ ${lastConnectionError
     if (!argText) {
       await reply(
         jid,
-        `🎵 Example:\n${PREFIX}play song name`,
+        `🎵 Example:\n${PREFIX}song Pal Pal`,
         quoted
       );
       return;
     }
 
     try {
-      const result =
-        await ytSearch(
-          argText
+      const audioDir =
+        path.join(
+          __dirname,
+          "audio"
         );
 
-      const video =
-        result.videos?.[0];
+      if (!fs.existsSync(audioDir)) {
+        fs.mkdirSync(
+          audioDir,
+          { recursive: true }
+        );
+      }
 
-      if (!video) {
+      const normalize =
+        (text) =>
+          String(text)
+            .toLowerCase()
+            .replace(
+              /\.[^/.]+$/,
+              ""
+            )
+            .replace(
+              /[^a-z0-9]+/g,
+              ""
+            );
+
+      const wanted =
+        normalize(argText);
+
+      const files =
+        fs.readdirSync(
+          audioDir
+        ).filter(
+          (file) =>
+            /\.(mp3|m4a|ogg|wav)$/i.test(
+              file
+            )
+        );
+
+      const songFile =
+        files.find(
+          (file) =>
+            normalize(file)
+              .includes(wanted) ||
+            wanted.includes(
+              normalize(file)
+            )
+        );
+
+      if (!songFile) {
         await reply(
           jid,
-          "❌ গান পাওয়া যায়নি।",
+          `❌ গানটি পাওয়া যায়নি।
+
+🎵 Audio folder-এ অনুমোদিত MP3 রাখো।
+🔎 Search: ${argText}`,
           quoted
         );
         return;
       }
 
-      await reply(
+      const filePath =
+        path.join(
+          audioDir,
+          songFile
+        );
+
+      await sock.sendMessage(
         jid,
-        `🎵 MUSIC RESULT
-
-🎧 Title: ${video.title}
-⏱️ Duration: ${video.timestamp}
-👁️ Views: ${video.views}
-
-🔗 ${video.url}
-
-ℹ️ এটি YouTube search result link।`,
-        quoted
+        {
+          audio:
+            fs.readFileSync(
+              filePath
+            ),
+          mimetype:
+            "audio/mpeg",
+          fileName:
+            songFile,
+          ptt: false
+        },
+        {
+          quoted
+        }
       );
-    } catch {
+    } catch (error) {
       await reply(
         jid,
-        "❌ Music search failed.",
+        `❌ গান পাঠানো যায়নি.\n${
+          error?.message ||
+          "Unknown error"
+        }`,
         quoted
       );
     }
