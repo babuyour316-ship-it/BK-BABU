@@ -3183,14 +3183,7 @@ if (value === null) {
     if (
     command === "block"
   ) {
-    if (!isOwner(sender)) {
-      await reply(
-        jid,
-        "❌ Owner only command.",
-        quoted
-      );
-      return;
-    }
+    
 
     const target =
       getTarget(
