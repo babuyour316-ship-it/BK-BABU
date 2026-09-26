@@ -3109,7 +3109,85 @@ const hasMedia =
 
     return;
   }
+  if (
+    command === "alladd"
+  ) {
+    if (!group) {
+      await reply(
+        jid,
+        "❌ এই command শুধু group-এ ব্যবহার করা যাবে।",
+        quoted
+      );
+      return;
+    }
 
+    const allowed =
+      await safeGroupAdmin(
+        jid,
+        sender,
+        jid,
+        quoted
+      );
+
+    if (!allowed) {
+      return;
+    }
+
+    const targetLink =
+      args.find((x) =>
+        x.includes("chat.whatsapp.com/")
+      );
+
+    if (!targetLink) {
+      await reply(
+        jid,
+        `❌ Example:\n${PREFIX}alladd https://chat.whatsapp.com/XXXXXXXX`,
+        quoted
+      );
+      return;
+    }
+
+    const code =
+      targetLink
+        .split("chat.whatsapp.com/")[1]
+        ?.split(/[?#\s]/)[0];
+
+    if (!code) {
+      await reply(
+        jid,
+        "❌ Group link ঠিক নয়।",
+        quoted
+      );
+      return;
+    }
+
+    try {
+      const info =
+        await sock.groupGetInviteInfo(
+          code
+        );
+
+      const invite =
+        `https://chat.whatsapp.com/${code}`;
+
+      await reply(
+        jid,
+        `🔗 *ALL ADD INVITE*\n\n` +
+        `👥 Group: ${info?.subject || "Target Group"}\n` +
+        `📎 Invite Link:\n${invite}\n\n` +
+        `ℹ️ যাদের direct add সম্ভব নয়, তারা এই link দিয়ে নিজেরা join করতে পারবে।`,
+        quoted
+      );
+    } catch (error) {
+      await reply(
+        jid,
+        `❌ Group link যাচাই করা যায়নি.\n${error?.message || "Invalid link"}`,
+        quoted
+      );
+    }
+
+    return;
+  }
   if (
     command === "welcome" ||
     command === "goodbye" ||
