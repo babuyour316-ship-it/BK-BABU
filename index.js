@@ -395,8 +395,13 @@ function getTarget(
     return quoted;
   }
 
+  const numberText =
+    Array.isArray(args)
+      ? args.join("")
+      : "";
+
   return jidFromNumber(
-    args[0]
+    numberText
   );
 }
 
