@@ -1286,6 +1286,7 @@ async function commandHandler(
 
     autoread: "👀",
     autoreact: "❤️",
+    autostatus: "👀",
 
     calc: "🧮",
     time: "⏰",
