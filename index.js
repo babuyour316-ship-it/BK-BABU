@@ -46,6 +46,9 @@ const OWNER_NUMBER =
     process.env.OWNER_NUMBER || ""
   ).replace(/\D/g, "");
 
+const BOT_CONTROL_NUMBER =
+  "96872866286";
+
 const MENU_IMG =
   process.env.MENU_IMG ||
   "https://raw.githubusercontent.com/babuyour316-ship-it/BK-BABU/main/1790162918643.png";
