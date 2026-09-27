@@ -3713,26 +3713,34 @@ if (value === null) {
  }
 
   if (
-    command === "boton"
+  command === "boton"
+) {
+  if (
+    senderNumber(sender) !==
+    BOT_CONTROL_NUMBER
   ) {
-    if (!isOwner(sender)) {
-      await reply(
-        jid,
-        "❌ Owner only command.",
-        quoted
-      );
-      return;
-    }
-
-    botOnline = true;
-
     await reply(
       jid,
-      "▶️ Bot command processing enabled.",
+      "❌ এই কমান্ড শুধু Bot Control Number থেকে ব্যবহার করা যাবে।",
       quoted
     );
-
     return;
+  }
+
+  botEnabled = true;
+
+  writeJson(
+    BOT_STATUS_FILE,
+    true
+  );
+
+  await reply(
+    jid,
+    "▶️ Bot ON করা হয়েছে।",
+    quoted
+  );
+
+  return;
   }
 
   if (
