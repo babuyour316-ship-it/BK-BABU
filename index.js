@@ -69,6 +69,17 @@ const DATA_DIR = path.join(
   "data"
 );
 
+const BOT_STATUS_FILE = path.join(
+  DATA_DIR,
+  "bot-status.json"
+);
+
+let botEnabled =
+  !!readJson(
+    BOT_STATUS_FILE,
+    true
+  );
+
 const SETTINGS_FILE = path.join(
   DATA_DIR,
   "group-settings.json"
