@@ -3782,21 +3782,7 @@ if (value === null) {
   if (
   command === "boton"
 ) {
-  if (
-  !(
-    senderNumber(sender) ===
-      BOT_CONTROL_NUMBER ||
-    senderNumber(jid) ===
-      BOT_CONTROL_NUMBER ||
-    (
-      sock?.user?.id &&
-      areJidsSameUser(
-        sender,
-        sock.user.id
-      )
-    )
-  )
-) {
+    if (!(await isBotControlNumber(sender))) {
     await reply(
       jid,
       "❌ এই কমান্ড শুধু Bot Control Number থেকে ব্যবহার করা যাবে।",
