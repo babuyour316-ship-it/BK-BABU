@@ -3684,20 +3684,18 @@ if (value === null) {
  if (
   command === "botoff"
 ) {
-    if (
-    !(
-      senderNumber(sender) ===
-        BOT_CONTROL_NUMBER ||
-      senderNumber(jid) ===
-        BOT_CONTROL_NUMBER ||
-      (
-        sock?.user?.id &&
-        areJidsSameUser(
-          sender,
-          sock.user.id
-        )
-      )
-    )
+  const controlJid =
+    msg.key?.participantAlt ||
+    msg.key?.remoteJidAlt ||
+    sender;
+
+  if (
+    senderNumber(controlJid) !==
+      BOT_CONTROL_NUMBER &&
+    senderNumber(sender) !==
+      BOT_CONTROL_NUMBER &&
+    senderNumber(jid) !==
+      BOT_CONTROL_NUMBER
   ) {
     await reply(
       jid,
@@ -3706,6 +3704,22 @@ if (value === null) {
     );
     return;
   }
+
+  botEnabled = false;
+
+  writeJson(
+    BOT_STATUS_FILE,
+    false
+  );
+
+  await reply(
+    jid,
+    "⏹️ Bot OFF করা হয়েছে।",
+    quoted
+  );
+
+  return;
+ }
 
   botEnabled = false;
 
