@@ -680,6 +680,7 @@ function menuText() {
 ┣━━〔 ⚡ AUTO 〕━━
 ┃ ${PREFIX}autoread on/off
 ┃ ${PREFIX}autoreact on/off
+┃ ${PREFIX}autostatus on/off
 
 ┣━━〔 🧰 TOOLS 〕━━
 ┃ ${PREFIX}calc 10+20
