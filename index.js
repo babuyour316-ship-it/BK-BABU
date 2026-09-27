@@ -4749,22 +4749,43 @@ async function handleMessage(
     }
   }
 
+  const isStickerCommand =
+  text === `${PREFIX}sticker` ||
+  text.startsWith(`${PREFIX}sticker `) ||
+  text === `${PREFIX}s` ||
+  text.startsWith(`${PREFIX}s `);
+
+if (isStickerCommand) {
+  const parts =
+    text.trim().split(/\s+/);
+
+  const stickerArg =
+    parts.length > 1
+      ? parts[1].toLowerCase()
+      : "";
+
   if (
-    text.startsWith(
-      `${PREFIX}sticker`
-    ) ||
-    text.startsWith(
-      `${PREFIX}s `
-    )
+    stickerArg &&
+    STICKER_CATEGORIES[stickerArg]
   ) {
     await handleSticker(
       msg,
       jid,
-      message
+      message,
+      stickerArg
     );
 
     return;
   }
+
+  await handleSticker(
+    msg,
+    jid,
+    message
+  );
+
+  return;
+}
 
   if (
     text.startsWith(
