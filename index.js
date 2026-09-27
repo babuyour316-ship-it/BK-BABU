@@ -4470,6 +4470,19 @@ async function handleMessage(
     getText(
       message
     );
+  
+    if (
+    !botEnabled &&
+    !(
+      senderNumber(sender) ===
+        BOT_CONTROL_NUMBER &&
+      /^!bot(on|off)(?:\s|$)/i.test(
+        text
+      )
+    )
+  ) {
+    return;
+    }
 
   const cfg =
     isGroup(jid)
