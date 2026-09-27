@@ -272,6 +272,36 @@ function senderNumber(jid) {
     .split(":")[0];
 }
 
+function isBotControlNumber(jid) {
+  const number =
+    senderNumber(jid);
+
+  if (
+    number ===
+    BOT_CONTROL_NUMBER
+  ) {
+    return true;
+  }
+
+  if (
+    jid &&
+    sock?.user?.id &&
+    areJidsSameUser(
+      jid,
+      sock.user.id
+    )
+  ) {
+    return (
+      senderNumber(
+        sock.user.id
+      ) ===
+      BOT_CONTROL_NUMBER
+    );
+  }
+
+  return false;
+}
+
 function isOwner(jid) {
   const ownerByNumber =
     !!OWNER_NUMBER &&
