@@ -4206,11 +4206,147 @@ if (
 
   return false;
     }
+const STICKER_CATEGORIES = {
+  funny: "funny",
+  danger: "danger",
+  attitude: "attitude",
+  love: "love",
+  sad: "sad",
+  cute: "cute"
+};
+
+const stickerState = {};
+
+function shuffleArray(items) {
+  const arr = [...items];
+
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(
+      Math.random() * (i + 1)
+    );
+
+    [arr[i], arr[j]] =
+      [arr[j], arr[i]];
+  }
+
+  return arr;
+}
+
+function getNextStickerPath(category) {
+  const folder = path.join(
+    __dirname,
+    "stickers",
+    category
+  );
+
+  if (!fs.existsSync(folder)) {
+    return null;
+  }
+
+  const files =
+    fs.readdirSync(folder)
+      .filter(file =>
+        file.toLowerCase().endsWith(".webp")
+      )
+      .sort();
+
+  if (!files.length) {
+    return null;
+  }
+
+  if (
+    !stickerState[category] ||
+    stickerState[category].queue.length === 0
+  ) {
+    let queue =
+      shuffleArray(files);
+
+    const last =
+      stickerState[category]?.last;
+
+    if (
+      queue.length > 1 &&
+      queue[0] === last
+    ) {
+      [queue[0], queue[1]] =
+        [queue[1], queue[0]];
+    }
+
+    stickerState[category] = {
+      queue,
+      last
+    };
+  }
+
+  const file =
+    stickerState[category].queue.shift();
+
+  stickerState[category].last = file;
+
+  return path.join(
+    folder,
+    file
+  );
+}
+
+async function sendCategorySticker(
+  jid,
+  quoted,
+  category
+) {
+  const stickerPath =
+    getNextStickerPath(category);
+
+  if (!stickerPath) {
+    await reply(
+      jid,
+      `❌ ${category} sticker পাওয়া যায়নি।`,
+      quoted
+    );
+    return;
+  }
+
+  try {
+    const stickerBuffer =
+      fs.readFileSync(stickerPath);
+
+    await sock.sendMessage(
+      jid,
+      {
+        sticker:
+          stickerBuffer
+      },
+      {
+        quoted
+      }
+    );
+  } catch {
+    await reply(
+      jid,
+      "❌ Sticker পাঠানো যায়নি।",
+      quoted
+    );
+  }
+}
+
 async function handleSticker(
   msg,
   jid,
-  quoted
+  quoted,
+  category = null
 ) {
+  if (
+    category &&
+    STICKER_CATEGORIES[category]
+  ) {
+    await sendCategorySticker(
+      jid,
+      quoted,
+      category
+    );
+    return;
+  }
+
   const message =
     msg.message || {};
 
@@ -4277,7 +4413,7 @@ async function handleSticker(
       quoted
     );
   }
-}
+      }
 
 function replaceUser(
   template,
