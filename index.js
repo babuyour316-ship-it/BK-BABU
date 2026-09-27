@@ -3727,9 +3727,20 @@ if (value === null) {
   command === "boton"
 ) {
   if (
-    senderNumber(sender) !==
-    BOT_CONTROL_NUMBER
-  ) {
+  !(
+    senderNumber(sender) ===
+      BOT_CONTROL_NUMBER ||
+    senderNumber(jid) ===
+      BOT_CONTROL_NUMBER ||
+    (
+      sock?.user?.id &&
+      areJidsSameUser(
+        sender,
+        sock.user.id
+      )
+    )
+  )
+) {
     await reply(
       jid,
       "❌ এই কমান্ড শুধু Bot Control Number থেকে ব্যবহার করা যাবে।",
@@ -4483,15 +4494,26 @@ async function handleMessage(
     );
   
     if (
-    !botEnabled &&
-    !(
+  !botEnabled &&
+  !(
+    (
       senderNumber(sender) ===
-        BOT_CONTROL_NUMBER &&
-      /^!bot(on|off)(?:\s|$)/i.test(
-        text
+        BOT_CONTROL_NUMBER ||
+      senderNumber(jid) ===
+        BOT_CONTROL_NUMBER ||
+      (
+        sock?.user?.id &&
+        areJidsSameUser(
+          sender,
+          sock.user.id
+        )
       )
+    ) &&
+    /^!bot(on|off)(?:\s|$)/i.test(
+      text
     )
-  ) {
+  )
+) {
     return;
     }
 
