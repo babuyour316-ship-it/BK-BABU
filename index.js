@@ -283,6 +283,33 @@ function isBotControlNumber(jid) {
     return true;
   }
 
+  const botId =
+    sock?.user?.id;
+
+  if (
+    botId &&
+    areJidsSameUser(
+      jid,
+      botId
+    )
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function isBotControlNumber(jid) {
+  const number =
+    senderNumber(jid);
+
+  if (
+    number ===
+    BOT_CONTROL_NUMBER
+  ) {
+    return true;
+  }
+
   if (
     jid &&
     sock?.user?.id &&
