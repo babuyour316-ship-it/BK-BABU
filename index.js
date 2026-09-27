@@ -3684,9 +3684,20 @@ if (value === null) {
  if (
   command === "botoff"
 ) {
-  if (
-    senderNumber(sender) !==
-    BOT_CONTROL_NUMBER
+    if (
+    !(
+      senderNumber(sender) ===
+        BOT_CONTROL_NUMBER ||
+      senderNumber(jid) ===
+        BOT_CONTROL_NUMBER ||
+      (
+        sock?.user?.id &&
+        areJidsSameUser(
+          sender,
+          sock.user.id
+        )
+      )
+    )
   ) {
     await reply(
       jid,
