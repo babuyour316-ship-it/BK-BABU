@@ -775,7 +775,14 @@ function menuText() {
 ┣━━〔 🎵 MEDIA 〕━━
 ┃ ${PREFIX}play query
 ┃ ${PREFIX}song query
-┃ ${PREFIX}sticker
+
+┣━━〔 🎭 STICKER 〕━━
+┃ ${PREFIX}sticker funny
+┃ ${PREFIX}sticker danger
+┃ ${PREFIX}sticker attitude
+┃ ${PREFIX}sticker love
+┃ ${PREFIX}sticker sad
+┃ ${PREFIX}sticker cute
 
 ┣━━〔 🤖 AI 〕━━
 ┃ ${PREFIX}ai question
