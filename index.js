@@ -3751,22 +3751,6 @@ if (value === null) {
   return;
  }
 
-  botEnabled = false;
-
-  writeJson(
-    BOT_STATUS_FILE,
-    false
-  );
-
-  await reply(
-    jid,
-    "⏹️ Bot OFF করা হয়েছে।",
-    quoted
-  );
-
-  return;
- }
-
   if (
   command === "boton"
 ) {
