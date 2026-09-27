@@ -3681,28 +3681,36 @@ if (value === null) {
     return;
   }
 
+ if (
+  command === "botoff"
+) {
   if (
-    command === "botoff"
+    senderNumber(sender) !==
+    BOT_CONTROL_NUMBER
   ) {
-    if (!isOwner(sender)) {
-      await reply(
-        jid,
-        "❌ Owner only command.",
-        quoted
-      );
-      return;
-    }
-
-    botOnline = false;
-
     await reply(
       jid,
-      "⏸️ Bot command processing temporarily disabled.",
+      "❌ এই কমান্ড শুধু Bot Control Number থেকে ব্যবহার করা যাবে।",
       quoted
     );
-
     return;
   }
+
+  botEnabled = false;
+
+  writeJson(
+    BOT_STATUS_FILE,
+    false
+  );
+
+  await reply(
+    jid,
+    "⏹️ Bot OFF করা হয়েছে।",
+    quoted
+  );
+
+  return;
+ }
 
   if (
     command === "boton"
