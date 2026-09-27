@@ -4538,25 +4538,13 @@ async function handleMessage(
     if (
   !botEnabled &&
   !(
-    (
-      senderNumber(sender) ===
-        BOT_CONTROL_NUMBER ||
-      senderNumber(jid) ===
-        BOT_CONTROL_NUMBER ||
-      (
-        sock?.user?.id &&
-        areJidsSameUser(
-          sender,
-          sock.user.id
-        )
-      )
-    ) &&
+    (await isBotControlNumber(sender)) &&
     /^!bot(on|off)(?:\s|$)/i.test(
       text
     )
   )
 ) {
-    return;
+  return;
     }
 
   const cfg =
