@@ -4390,11 +4390,34 @@ async function handleMessage(
     return;
   }
 
-  if (
+    if (
     isStatus(jid)
   ) {
+    if (
+      autoStatus &&
+      msg.key
+    ) {
+      try {
+        await sock.readMessages(
+          [msg.key]
+        );
+      } catch {}
+
+      try {
+        await sock.sendMessage(
+          jid,
+          {
+            react: {
+              text: "❤️",
+              key: msg.key
+            }
+          }
+        );
+      } catch {}
+    }
+
     return;
-  }
+    }
 
   if (
     msg.key?.fromMe &&
