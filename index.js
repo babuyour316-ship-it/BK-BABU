@@ -3754,14 +3754,7 @@ if (value === null) {
     msg.key?.remoteJidAlt ||
     sender;
 
-  if (
-    senderNumber(controlJid) !==
-      BOT_CONTROL_NUMBER &&
-    senderNumber(sender) !==
-      BOT_CONTROL_NUMBER &&
-    senderNumber(jid) !==
-      BOT_CONTROL_NUMBER
-  ) {
+  if (!(await isBotControlNumber(sender))) {
     await reply(
       jid,
       "❌ এই কমান্ড শুধু Bot Control Number থেকে ব্যবহার করা যাবে।",
