@@ -272,7 +272,9 @@ function senderNumber(jid) {
     .split(":")[0];
 }
 
-function isBotControlNumber(jid) {
+async function isBotControlNumber(
+  jid
+) {
   const number =
     senderNumber(jid);
 
@@ -286,7 +288,11 @@ function isBotControlNumber(jid) {
   const botId =
     sock?.user?.id;
 
+  const botLid =
+    sock?.user?.lid;
+
   if (
+    jid &&
     botId &&
     areJidsSameUser(
       jid,
@@ -296,34 +302,36 @@ function isBotControlNumber(jid) {
     return true;
   }
 
-  return false;
-}
-
-function isBotControlNumber(jid) {
-  const number =
-    senderNumber(jid);
-
   if (
-    number ===
-    BOT_CONTROL_NUMBER
+    jid &&
+    botLid &&
+    areJidsSameUser(
+      jid,
+      botLid
+    )
   ) {
     return true;
   }
 
   if (
-    jid &&
-    sock?.user?.id &&
-    areJidsSameUser(
-      jid,
-      sock.user.id
-    )
+    jid?.endsWith("@lid") &&
+    sock?.signalRepository
+      ?.lidMapping
   ) {
-    return (
-      senderNumber(
-        sock.user.id
-      ) ===
-      BOT_CONTROL_NUMBER
-    );
+    try {
+      const pn =
+        await sock
+          .signalRepository
+          .lidMapping
+          .getPNForLID(jid);
+
+      if (
+        senderNumber(pn) ===
+        BOT_CONTROL_NUMBER
+      ) {
+        return true;
+      }
+    } catch {}
   }
 
   return false;
