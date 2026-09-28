@@ -733,6 +733,8 @@ function menuText() {
 ┃ ${PREFIX}alladd group-link
 ┃ ${PREFIX}promote @user
 ┃ ${PREFIX}demote @user
+┃ ${PREFIX}alladmin
+┃ ${PREFIX}unadmin
 ┃ ${PREFIX}mute / ${PREFIX}unmute
 ┃ ${PREFIX}open / ${PREFIX}close
 ┃ ${PREFIX}setname text
