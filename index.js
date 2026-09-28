@@ -2993,6 +2993,192 @@ const hasMedia =
 
     return;
   }
+    if (
+    command === "alladmin" ||
+    command === "unadmin"
+  ) {
+    if (!group) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু Group-এ ব্যবহার করা যাবে।",
+        quoted
+      );
+      return;
+    }
+
+    const allowed =
+      await safeGroupAdmin(
+        jid,
+        sender,
+        jid,
+        quoted
+      );
+
+    if (!allowed) {
+      return;
+    }
+
+    const senderAdmin =
+      await isAdmin(
+        jid,
+        sender
+      );
+
+    if (!senderAdmin) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু Group Admin ব্যবহার করতে পারবে।",
+        quoted
+      );
+      return;
+    }
+
+    const metadata =
+      await groupMetadata(
+        jid
+      );
+
+    if (!metadata) {
+      await reply(
+        jid,
+        "❌ Group information পাওয়া যাচ্ছে না।",
+        quoted
+      );
+      return;
+    }
+
+    const botId =
+      sock?.user?.id;
+
+    if (
+      command === "alladmin"
+    ) {
+      const targets =
+        metadata.participants
+          .filter(
+            p =>
+              !p.admin &&
+              !areJidsSameUser(
+                p.id,
+                botId
+              )
+          )
+          .map(
+            p => p.id
+          );
+
+      if (!targets.length) {
+        await reply(
+          jid,
+          "ℹ️ সাধারণ Member নেই। সবাই ইতিমধ্যে Admin।",
+          quoted
+        );
+        return;
+      }
+
+      await reply(
+        jid,
+        `👑 ${targets.length} জন Member-কে Admin করা হচ্ছে...`,
+        quoted
+      );
+
+      let promoted = 0;
+
+      for (
+        let i = 0;
+        i < targets.length;
+        i += 5
+      ) {
+        const batch =
+          targets.slice(
+            i,
+            i + 5
+          );
+
+        try {
+          await sock.groupParticipantsUpdate(
+            jid,
+            batch,
+            "promote"
+          );
+
+          promoted +=
+            batch.length;
+        } catch {}
+      }
+
+      await reply(
+        jid,
+        `✅ ALL ADMIN Complete!\n👑 Admin করা হয়েছে: ${promoted} জন`,
+        quoted
+      );
+
+      return;
+    }
+
+    const targets =
+      metadata.participants
+        .filter(
+          p =>
+            p.admin &&
+            p.admin !== "superadmin" &&
+            !areJidsSameUser(
+              p.id,
+              botId
+            )
+        )
+        .map(
+          p => p.id
+        );
+
+    if (!targets.length) {
+      await reply(
+        jid,
+        "ℹ️ Demote করার মতো কোনো Admin নেই।",
+        quoted
+      );
+      return;
+    }
+
+    await reply(
+      jid,
+      `⬇️ ${targets.length} জন Admin-কে Member করা হচ্ছে...`,
+      quoted
+    );
+
+    let demoted = 0;
+
+    for (
+      let i = 0;
+      i < targets.length;
+      i += 5
+    ) {
+      const batch =
+        targets.slice(
+          i,
+          i + 5
+        );
+
+      try {
+        await sock.groupParticipantsUpdate(
+          jid,
+          batch,
+          "demote"
+        );
+
+        demoted +=
+          batch.length;
+      } catch {}
+    }
+
+    await reply(
+      jid,
+      `✅ UNADMIN Complete!\n⬇️ Member করা হয়েছে: ${demoted} জন`,
+      quoted
+    );
+
+    return;
+    }
 
   if (
     command === "promote" ||
