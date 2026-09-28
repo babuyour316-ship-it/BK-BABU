@@ -192,6 +192,7 @@ function defaultSettings() {
     antiflood: false,
     antibadword: false,
     antisticker: false,
+    autocolor: false,
 
     autoread: false,
     autoreact: false,
@@ -1286,6 +1287,57 @@ async function commandHandler(
       ? getSettings(jid)
       : null;
     if (
+    command === "autocolor"
+  ) {
+    if (!group) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু Group-এ ব্যবহার করা যাবে।",
+        quoted
+      );
+      return;
+    }
+
+    const allowed =
+      await safeGroupAdmin(
+        jid,
+        sender,
+        jid,
+        quoted
+      );
+
+    if (!allowed) {
+      return;
+    }
+
+    const value =
+      parseOnOff(args[0]);
+
+    if (value === null) {
+      await reply(
+        jid,
+        `❌ ব্যবহার করো:\n${PREFIX}autocolor on\n${PREFIX}autocolor off`,
+        quoted
+      );
+      return;
+    }
+
+    groupSettings.autocolor =
+      value;
+
+    saveSettings();
+
+    await reply(
+      jid,
+      value
+        ? "🌈 Auto Color ON করা হয়েছে। এখন Group-এর সাধারণ text message colorful design-এ পাঠানো হবে।"
+        : "⚪ Auto Color OFF করা হয়েছে।",
+      quoted
+    );
+
+    return;
+    }
+    if (
     command === "autostatus"
   ) {
     const value =
@@ -1351,6 +1403,7 @@ async function commandHandler(
     demote: "⬇️",
     alladmin: "👑",
     unadmin: "⬇️",
+    autocolor: "🌈",
     mute: "🔇",
     unmute: "🔊",
     open: "🔓",
