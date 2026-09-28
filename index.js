@@ -4937,6 +4937,77 @@ async function handleMessage(
     isGroup(jid)
       ? getSettings(jid)
       : null;
+    if (
+    cfg?.autocolor &&
+    isGroup(jid) &&
+    text &&
+    !text.startsWith(PREFIX) &&
+    !msg.key?.fromMe
+  ) {
+    try {
+      const botIsAdmin =
+        await isAdmin(
+          jid,
+          sock?.user?.id
+        );
+
+      if (!botIsAdmin) {
+        return;
+      }
+
+      const colorStyles = [
+        text => `🌈✨ ${text} ✨🌈`,
+        text => `❤️‍🔥🔴 ${text} 🔴❤️‍🔥`,
+        text => `🧡🟠 ${text} 🟠🧡`,
+        text => `💛🟡 ${text} 🟡💛`,
+        text => `💚🟢 ${text} 🟢💚`,
+        text => `💙🔵 ${text} 🔵💙`,
+        text => `💜🟣 ${text} 🟣💜`,
+        text => `🩷💗 ${text} 💗🩷`,
+        text => `🖤⚫ ${text} ⚫🖤`,
+        text => `🤍⚪ ${text} ⚪🤍`,
+        text => `🔥✨ ${text} ✨🔥`,
+        text => `💫🌟 ${text} 🌟💫`,
+        text => `⚡🌈 ${text} 🌈⚡`,
+        text => `👑✨ ${text} ✨👑`,
+        text => `💎🌈 ${text} 🌈💎`
+      ];
+
+      const randomStyle =
+        colorStyles[
+          Math.floor(
+            Math.random() *
+              colorStyles.length
+          )
+        ];
+
+      const colorfulText =
+        randomStyle(text);
+
+      await sock.sendMessage(
+        jid,
+        {
+          delete: msg.key
+        }
+      );
+
+      await sock.sendMessage(
+        jid,
+        {
+          text: colorfulText
+        }
+      );
+
+    } catch (error) {
+      console.error(
+        "❌ Auto Color error:",
+        error?.message ||
+          error
+      );
+    }
+
+    return;
+    }
 
   if (
     cfg?.autoread &&
