@@ -100,6 +100,8 @@ const AUTOSTATUS_FILE = path.join(
   "autostatus.json"
 );
 
+const AUTO_COLOR_SENT = new Set();
+
 fs.mkdirSync(DATA_DIR, {
   recursive: true
 });
@@ -4937,21 +4939,30 @@ async function handleMessage(
     isGroup(jid)
       ? getSettings(jid)
       : null;
-    if (
+        if (
     cfg?.autocolor &&
     isGroup(jid) &&
     text &&
-    !text.startsWith(PREFIX) &&
-    !msg.key?.fromMe
+    !text.startsWith(PREFIX)
   ) {
-    try {
-      const botIsAdmin =
-        await isAdmin(
-          jid,
-          sock?.user?.id
-        );
+    const messageId =
+      msg.key?.id || "";
 
-      if (!botIsAdmin) {
+    if (
+      msg.key?.fromMe &&
+      AUTO_COLOR_SENT.has(messageId)
+    ) {
+      AUTO_COLOR_SENT.delete(
+        messageId
+      );
+      return;
+    }
+
+    try {
+      const botIsAdminNow =
+        await botIsAdmin(jid);
+
+      if (!botIsAdminNow) {
         return;
       }
 
@@ -4991,12 +5002,27 @@ async function handleMessage(
         }
       );
 
-      await sock.sendMessage(
-        jid,
-        {
-          text: colorfulText
-        }
-      );
+      const sent =
+        await sock.sendMessage(
+          jid,
+          {
+            text: colorfulText
+          }
+        );
+
+      if (sent?.key?.id) {
+        AUTO_COLOR_SENT.add(
+          sent.key.id
+        );
+
+        setTimeout(
+          () =>
+            AUTO_COLOR_SENT.delete(
+              sent.key.id
+            ),
+          30000
+        );
+      }
 
     } catch (error) {
       console.error(
@@ -5007,7 +5033,7 @@ async function handleMessage(
     }
 
     return;
-    }
+        }
 
   if (
     cfg?.autoread &&
