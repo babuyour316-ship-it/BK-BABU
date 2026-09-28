@@ -1349,6 +1349,8 @@ async function commandHandler(
     add: "➕",
     promote: "⬆️",
     demote: "⬇️",
+    alladmin: "👑",
+    unadmin: "⬇️",
     mute: "🔇",
     unmute: "🔊",
     open: "🔓",
