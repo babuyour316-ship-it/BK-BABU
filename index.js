@@ -766,6 +766,7 @@ function menuText() {
 ┃ ${PREFIX}autoreact on/off
 ┃ ${PREFIX}autostatus on/off
 ┃ ${PREFIX}autocolor on/off
+┃ ${PREFIX}callnotify on/off
 
 ┣━━〔 🧰 TOOLS 〕━━
 ┃ ${PREFIX}calc 10+20
@@ -1290,6 +1291,57 @@ async function commandHandler(
       ? getSettings(jid)
       : null;
     if (
+          if (
+      command === "callnotify"
+    ) {
+      if (!group) {
+        await reply(
+          jid,
+          "❌ এই কমান্ড শুধু Group-এ ব্যবহার করা যাবে।",
+          quoted
+        );
+        return;
+      }
+
+      const allowed =
+        await safeGroupAdmin(
+          jid,
+          sender,
+          jid,
+          quoted
+        );
+
+      if (!allowed) {
+        return;
+      }
+
+      const value =
+        parseOnOff(args[0]);
+
+      if (value === null) {
+        await reply(
+          jid,
+          `❌ ব্যবহার করো:\n${PREFIX}callnotify on\n${PREFIX}callnotify off`,
+          quoted
+        );
+        return;
+      }
+
+      groupSettings.callnotify =
+        value;
+
+      saveSettings();
+
+      await reply(
+        jid,
+        value
+          ? "📞🔔 Call Notification ON করা হয়েছে। এখন Group Call-এ Join/Leave notification আসবে।"
+          : "🔕📞 Call Notification OFF করা হয়েছে।",
+        quoted
+      );
+
+      return;
+    }
     command === "autocolor"
   ) {
     if (!group) {
