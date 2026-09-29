@@ -1294,6 +1294,58 @@ async function commandHandler(
       ? getSettings(jid)
       : null;
 
+  if (
+  command === "autoadd"
+) {
+  if (!group) {
+    await reply(
+      jid,
+      "❌ এই কমান্ড শুধু Group-এ ব্যবহার করা যাবে।",
+      quoted
+    );
+    return;
+  }
+
+  const allowed =
+    await safeGroupAdmin(
+      jid,
+      sender,
+      jid,
+      quoted
+    );
+
+  if (!allowed) {
+    return;
+  }
+
+  const value =
+    parseOnOff(args[0]);
+
+  if (value === null) {
+    await reply(
+      jid,
+      `❌ ব্যবহার করো:\n${PREFIX}autoadd on\n${PREFIX}autoadd off`,
+      quoted
+    );
+    return;
+  }
+
+  groupSettings.autoadd =
+    value;
+
+  saveSettings();
+
+  await reply(
+    jid,
+    value
+      ? "➕🔄 Auto Add ON করা হয়েছে। এখন কেউ Group থেকে Leave করলে তাকে আবার Group-এ Add করার চেষ্টা করা হবে।"
+      : "🔕➖ Auto Add OFF করা হয়েছে।",
+    quoted
+  );
+
+  return;
+  }
+
     if (
       command === "callnotify"
     ) {
