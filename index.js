@@ -1304,18 +1304,6 @@ async function commandHandler(
         return;
       }
 
-      const allowed =
-        await safeGroupAdmin(
-          jid,
-          sender,
-          jid,
-          quoted
-        );
-
-      if (!allowed) {
-        return;
-      }
-
       const value =
         parseOnOff(args[0]);
 
