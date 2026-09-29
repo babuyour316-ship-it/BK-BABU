@@ -1290,7 +1290,7 @@ async function commandHandler(
     group
       ? getSettings(jid)
       : null;
-    if (
+  
           if (
       command === "callnotify"
     ) {
