@@ -5309,13 +5309,31 @@ if (isStickerCommand) {
 async function handleGroupCallUpdate(calls) {
   for (const call of calls || []) {
     try {
+      console.log(
+        "📞 CALL EVENT:",
+        JSON.stringify({
+          status: call?.status,
+          chatId: call?.chatId,
+          from: call?.from,
+          callerPn: call?.callerPn,
+          isGroup: call?.isGroup,
+          groupJid: call?.groupJid
+        })
+      );
+
       const groupJid =
         call?.groupJid ||
-        (call?.chatId?.endsWith("@g.us")
-          ? call.chatId
-          : "");
+        (
+          typeof call?.chatId === "string" &&
+          call.chatId.endsWith("@g.us")
+            ? call.chatId
+            : ""
+        );
 
       if (!groupJid) {
+        console.log(
+          "📞 Call event ignored: Group JID পাওয়া যায়নি।"
+        );
         continue;
       }
 
@@ -5323,6 +5341,10 @@ async function handleGroupCallUpdate(calls) {
         getSettings(groupJid);
 
       if (!settings?.callnotify) {
+        console.log(
+          "📞 Call notification OFF:",
+          groupJid
+        );
         continue;
       }
 
@@ -5331,6 +5353,9 @@ async function handleGroupCallUpdate(calls) {
         call?.from;
 
       if (!userJid) {
+        console.log(
+          "📞 Call event ignored: Caller JID পাওয়া যায়নি।"
+        );
         continue;
       }
 
@@ -5338,10 +5363,6 @@ async function handleGroupCallUpdate(calls) {
         String(userJid)
           .split("@")[0]
           .split(":")[0];
-
-      if (!userNumber) {
-        continue;
-      }
 
       let groupName =
         "Our Group";
@@ -5353,10 +5374,22 @@ async function handleGroupCallUpdate(calls) {
         groupName =
           metadata?.subject ||
           "Our Group";
-      } catch {}
+      } catch (error) {
+        console.log(
+          "⚠️ Group metadata পাওয়া যায়নি:",
+          error?.message || error
+        );
+      }
 
+      /*
+       * GROUP CALL START / OFFER
+       */
       if (
-        call.status === "offer"
+        call.status === "offer" &&
+        (
+          call.isGroup ||
+          groupJid.endsWith("@g.us")
+        )
       ) {
         await sock.sendMessage(
           groupJid,
@@ -5375,11 +5408,24 @@ async function handleGroupCallUpdate(calls) {
           }
         );
 
+        console.log(
+          "✅ Group Call JOIN notification sent:",
+          groupJid,
+          userJid
+        );
+
         continue;
       }
 
+      /*
+       * GROUP CALL END / LEAVE
+       */
       if (
-        call.status === "terminate"
+        call.status === "terminate" &&
+        (
+          call.isGroup ||
+          groupJid.endsWith("@g.us")
+        )
       ) {
         await sock.sendMessage(
           groupJid,
@@ -5397,7 +5443,14 @@ async function handleGroupCallUpdate(calls) {
             ]
           }
         );
+
+        console.log(
+          "✅ Group Call LEAVE notification sent:",
+          groupJid,
+          userJid
+        );
       }
+
     } catch (error) {
       console.error(
         "❌ Group Call notification error:",
