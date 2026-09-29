@@ -5403,6 +5403,25 @@ sock =
       }
     );
 
+        sock.ev.on(
+      "call",
+      async calls => {
+        try {
+          await handleGroupCallUpdate(
+            calls
+          );
+        } catch (
+          error
+        ) {
+          console.error(
+            "❌ Call event error:",
+            error?.message ||
+              error
+          );
+        }
+      }
+    );
+
     sock.ev.on(
   "connection.update",
   async update => {
