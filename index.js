@@ -5059,7 +5059,7 @@ async function handleParticipantsUpdate(
     );
   }
 
-  if (
+    if (
     action ===
       "remove" ||
     action ===
@@ -5092,23 +5092,66 @@ async function handleParticipantsUpdate(
       continue;
     }
 
+    let addUser =
+      user;
+
+    if (
+      String(addUser)
+        .endsWith("@lid") &&
+      sock?.signalRepository
+        ?.lidMapping
+    ) {
+      try {
+        const phoneJid =
+          await sock
+            .signalRepository
+            .lidMapping
+            .getPNForLID(
+              addUser
+            );
+
+        if (phoneJid) {
+          addUser =
+            phoneJid;
+        }
+      } catch {}
+    }
+
     try {
-      await sock.groupParticipantsUpdate(
-        update.id,
-        [user],
-        "add"
+      const result =
+        await sock.groupParticipantsUpdate(
+          update.id,
+          [addUser],
+          "add"
+        );
+
+      const status =
+        result?.[0]?.status;
+
+      console.log(
+        "📌 Auto Add result:",
+        result
       );
+
+      if (
+        String(status) !==
+        "200"
+      ) {
+        throw new Error(
+          `WhatsApp Add failed. Status: ${status || "unknown"}`
+        );
+      }
 
       await sock.sendMessage(
         update.id,
         {
           text:
             `➕🔄 @${senderNumber(
-              user
+              addUser
             )} Group থেকে Leave করেছিল।\n` +
-            `🤖 Auto Add-এর মাধ্যমে আবার Group-এ Add করার চেষ্টা করা হয়েছে।`,
+            `✅ তাকে আবার Group-এ Add করা হয়েছে।`,
           mentions: [
-            user
+            addUser
           ]
         }
       );
@@ -5116,7 +5159,7 @@ async function handleParticipantsUpdate(
       console.log(
         "✅ Auto Add successful:",
         update.id,
-        user
+        addUser
       );
 
     } catch (error) {
@@ -5132,17 +5175,17 @@ async function handleParticipantsUpdate(
           {
             text:
               `⚠️ @${senderNumber(
-                user
+                addUser
               )}-কে আবার Group-এ Add করা যায়নি।\n` +
-              `🔒 সম্ভবত WhatsApp privacy/restriction-এর কারণে।`,
+              `🔒 WhatsApp privacy/restriction অথবা Add permission-এর কারণে হতে পারে।`,
             mentions: [
-              user
+              addUser
             ]
           }
         );
       } catch {}
     }
-  }
+    }
   }
 }
 async function handleMessage(
