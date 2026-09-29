@@ -195,6 +195,7 @@ function defaultSettings() {
     antibadword: false,
     antisticker: false,
     autocolor: false,
+    callnotify: false,
 
     autoread: false,
     autoreact: false,
