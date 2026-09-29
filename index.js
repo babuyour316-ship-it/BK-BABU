@@ -1342,8 +1342,10 @@ async function commandHandler(
 
       return;
     }
-    command === "autocolor"
-  ) {
+  
+    if (
+      command === "autocolor"
+    ) {
     if (!group) {
       await reply(
         jid,
