@@ -5306,6 +5306,108 @@ if (isStickerCommand) {
   }
 }
 
+async function handleGroupCallUpdate(calls) {
+  for (const call of calls || []) {
+    try {
+      const groupJid =
+        call?.groupJid ||
+        (call?.chatId?.endsWith("@g.us")
+          ? call.chatId
+          : "");
+
+      if (!groupJid) {
+        continue;
+      }
+
+      const settings =
+        getSettings(groupJid);
+
+      if (!settings?.callnotify) {
+        continue;
+      }
+
+      const userJid =
+        call?.callerPn ||
+        call?.from;
+
+      if (!userJid) {
+        continue;
+      }
+
+      const userNumber =
+        String(userJid)
+          .split("@")[0]
+          .split(":")[0];
+
+      if (!userNumber) {
+        continue;
+      }
+
+      let groupName =
+        "Our Group";
+
+      try {
+        const metadata =
+          await groupMetadata(groupJid);
+
+        groupName =
+          metadata?.subject ||
+          "Our Group";
+      } catch {}
+
+      if (
+        call.status === "offer"
+      ) {
+        await sock.sendMessage(
+          groupJid,
+          {
+            text:
+              `╭━━━〔 📞❤️ CALL JOIN ❤️📞 〕━━━╮\n\n` +
+              `🏠 গ্রুপ: *${groupName}*\n\n` +
+              `👤 @${userNumber}\n\n` +
+              `🙏 আমাদের কলে আসার জন্য অসংখ্য ধন্যবাদ!\n` +
+              `❤️ আপনাকে কলে পেয়ে আমাদের আড্ডা আরও জমে গেল।\n` +
+              `🔥 Welcome to the Group Call!\n\n` +
+              `╰━━━━━━━━━━━━━━━━━━━━━━╯`,
+            mentions: [
+              userJid
+            ]
+          }
+        );
+
+        continue;
+      }
+
+      if (
+        call.status === "terminate"
+      ) {
+        await sock.sendMessage(
+          groupJid,
+          {
+            text:
+              `╭━━━〔 🥺💔 CALL LEFT 💔🥺 〕━━━╮\n\n` +
+              `🏠 গ্রুপ: *${groupName}*\n\n` +
+              `👤 @${userNumber}\n\n` +
+              `🥺 এভাবে হঠাৎ কল ছেড়ে চলে গেলে কেন?\n` +
+              `💔 আপনাকে ছাড়া কলে একটু খালি খালি লাগছে।\n` +
+              `😔 আবার ফিরে আসবেন কিন্তু!\n\n` +
+              `╰━━━━━━━━━━━━━━━━━━━━━━╯`,
+            mentions: [
+              userJid
+            ]
+          }
+        );
+      }
+    } catch (error) {
+      console.error(
+        "❌ Group Call notification error:",
+        error?.message ||
+          error
+      );
+    }
+  }
+}
+
 async function startBot() {
   if (
     starting
