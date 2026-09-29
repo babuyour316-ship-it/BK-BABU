@@ -768,6 +768,7 @@ function menuText() {
 ┃ ${PREFIX}autostatus on/off
 ┃ ${PREFIX}autocolor on/off
 ┃ ${PREFIX}callnotify on/off
+┃ ${PREFIX}autoadd on/off
 
 ┣━━〔 🧰 TOOLS 〕━━
 ┃ ${PREFIX}calc 10+20
