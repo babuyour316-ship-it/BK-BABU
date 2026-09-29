@@ -5069,6 +5069,79 @@ async function handleParticipantsUpdate(
       update.id,
       user
     );
+
+    const settings =
+      getSettings(
+        update.id
+      );
+
+    if (
+      !settings?.autoadd
+    ) {
+      continue;
+    }
+
+    if (
+      !(await botIsAdmin(
+        update.id
+      ))
+    ) {
+      console.log(
+        "⚠️ Auto Add: Bot admin নয়।"
+      );
+      continue;
+    }
+
+    try {
+      await sock.groupParticipantsUpdate(
+        update.id,
+        [user],
+        "add"
+      );
+
+      await sock.sendMessage(
+        update.id,
+        {
+          text:
+            `➕🔄 @${senderNumber(
+              user
+            )} Group থেকে Leave করেছিল।\n` +
+            `🤖 Auto Add-এর মাধ্যমে আবার Group-এ Add করার চেষ্টা করা হয়েছে।`,
+          mentions: [
+            user
+          ]
+        }
+      );
+
+      console.log(
+        "✅ Auto Add successful:",
+        update.id,
+        user
+      );
+
+    } catch (error) {
+      console.error(
+        "❌ Auto Add failed:",
+        error?.message ||
+          error
+      );
+
+      try {
+        await sock.sendMessage(
+          update.id,
+          {
+            text:
+              `⚠️ @${senderNumber(
+                user
+              )}-কে আবার Group-এ Add করা যায়নি।\n` +
+              `🔒 সম্ভবত WhatsApp privacy/restriction-এর কারণে।`,
+            mentions: [
+              user
+            ]
+          }
+        );
+      } catch {}
+    }
   }
   }
 }
