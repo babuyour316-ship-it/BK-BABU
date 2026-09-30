@@ -230,6 +230,9 @@ function getSettings(jid) {
 let sock = null;
 let authState = null;
 
+// Multiple connected WhatsApp sessions
+const connectedSessions = new Map();
+
 let starting = false;
 
 let botOnline = false;
