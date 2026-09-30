@@ -360,6 +360,91 @@ async function createConnectedSession(
     saveCreds
   );
 
+    sessionSock.ev.on(
+    "connection.update",
+    async update => {
+
+      const {
+        connection,
+        lastDisconnect
+      } = update;
+
+      console.log(
+        `🔌 Session ${sessionId} connection: ${
+          connection || "unknown"
+        }`
+      );
+
+      if (
+        connection === "open"
+      ) {
+
+        console.log(
+          `✅ WhatsApp session connected: ${sessionId}`
+        );
+
+        return;
+      }
+
+      if (
+        connection === "close"
+      ) {
+
+        const statusCode =
+          lastDisconnect
+            ?.error
+            ?.output
+            ?.statusCode;
+
+        console.log(
+          `⚠️ WhatsApp session closed: ${sessionId} | ${statusCode || "unknown"}`
+        );
+
+        if (
+          statusCode ===
+          DisconnectReason.loggedOut
+        ) {
+
+          connectedSessions.delete(
+            String(sessionId)
+          );
+
+          console.log(
+            `❌ Session logged out: ${sessionId}`
+          );
+
+          return;
+        }
+
+        connectedSessions.delete(
+          String(sessionId)
+        );
+
+        await sleep(5000);
+
+        try {
+
+          await createConnectedSession(
+            sessionId
+          );
+
+          console.log(
+            `🔄 Session reconnected: ${sessionId}`
+          );
+
+        } catch (error) {
+
+          console.error(
+            `❌ Session reconnect failed: ${sessionId}`,
+            error?.message ||
+              error
+          );
+
+        }
+      }
+    }
+  );
+
   return {
     sock: sessionSock,
     authState:
