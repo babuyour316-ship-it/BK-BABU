@@ -6016,6 +6016,9 @@ sock =
       sock,
       authState
     );
+
+    // Load previously connected WhatsApp sessions
+    await loadConnectedSessions();
     
     sock.ev.on(
       "creds.update",
