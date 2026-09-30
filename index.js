@@ -6835,29 +6835,6 @@ app.post("/api/pair", async (req, res) => {
 
 });
 
-  } catch (error) {
-
-    pairingBusy = false;
-
-    lastConnectionError =
-      error &&
-      error.message
-        ? error.message
-        : String(error);
-
-    return res.status(500).json({
-
-      success: false,
-
-      error:
-        lastConnectionError
-
-    });
-
-  }
-
-});
-
 
 // ------------------------------------------------------------
 // 404
