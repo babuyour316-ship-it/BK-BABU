@@ -7088,7 +7088,7 @@ app.post("/api/pair", async (req, res) => {
 
       // Wait for the WhatsApp socket to initialize
     // before requesting the pairing code.
-    await sleep(5000);
+    await sleep(1000);
 
     const rawCode =
       await session.sock.requestPairingCode(
