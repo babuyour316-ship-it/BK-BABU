@@ -265,6 +265,25 @@ function getConnectedSessions() {
   );
 }
 
+// Register a WhatsApp session
+function registerConnectedSession(
+  sessionId,
+  sessionSock,
+  sessionAuthState
+) {
+  if (!sessionId || !sessionSock) {
+    return;
+  }
+
+  connectedSessions.set(
+    String(sessionId),
+    {
+      sock: sessionSock,
+      authState: sessionAuthState
+    }
+  );
+}
+
 function cleanNumber(value) {
   return String(
     value || ""
