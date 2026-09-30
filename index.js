@@ -532,7 +532,7 @@ async function createConnectedSession(
           String(sessionId)
         );
 
-        await sleep(5000);
+        await sleep(100);
 
         try {
 
