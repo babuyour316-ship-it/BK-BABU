@@ -6684,6 +6684,10 @@ app.get(
 // PAIRING API
 // ------------------------------------------------------------
 
+// ------------------------------------------------------------
+// MULTI-SESSION PAIRING API
+// ------------------------------------------------------------
+
 app.post("/api/pair", async (req, res) => {
 
   if (pairingBusy) {
@@ -6694,19 +6698,6 @@ app.post("/api/pair", async (req, res) => {
 
       error:
         "A pairing request is already running. Please wait."
-
-    });
-
-  }
-
-  if (!sock) {
-
-    return res.status(503).json({
-
-      success: false,
-
-      error:
-        "WhatsApp connection is not ready yet."
 
     });
 
@@ -6753,8 +6744,17 @@ app.post("/api/pair", async (req, res) => {
 
   try {
 
+    const sessionId =
+      `session_${number}`;
+
+    const existingSession =
+      connectedSessions.get(
+        sessionId
+      );
+
     if (
-      authState?.state?.creds?.registered
+      existingSession &&
+      existingSession.authState?.state?.creds?.registered
     ) {
 
       pairingBusy = false;
@@ -6764,14 +6764,19 @@ app.post("/api/pair", async (req, res) => {
         success: false,
 
         error:
-          "This WhatsApp session is already registered. Unlink the linked device before requesting a new pairing code."
+          "This WhatsApp number is already connected."
 
       });
 
     }
 
+    const session =
+      await createConnectedSession(
+        sessionId
+      );
+
     const rawCode =
-      await sock.requestPairingCode(
+      await session.sock.requestPairingCode(
         number
       );
 
@@ -6792,14 +6797,43 @@ app.post("/api/pair", async (req, res) => {
 
       success: true,
 
-      code: pairingCode,
+      code:
+        pairingCode,
 
-      number: pairingNumber,
+      number:
+        pairingNumber,
+
+      sessionId:
+
+        sessionId,
 
       message:
         "Pairing code generated. Enter it in WhatsApp Linked Devices."
 
     });
+
+  } catch (error) {
+
+    pairingBusy = false;
+
+    lastConnectionError =
+      error &&
+      error.message
+        ? error.message
+        : String(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      error:
+        lastConnectionError
+
+    });
+
+  }
+
+});
 
   } catch (error) {
 
