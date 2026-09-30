@@ -7082,8 +7082,6 @@ app.post("/api/pair", async (req, res) => {
           ""
         );
 
-    pairingBusy = false;
-
     return res.status(200).json({
 
       success: true,
