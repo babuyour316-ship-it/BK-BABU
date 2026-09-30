@@ -5867,12 +5867,10 @@ sock =
   }); 
 
     // Register the current WhatsApp session
-    connectedSessions.set(
+    registerConnectedSession(
       "primary",
-      {
-        sock,
-        authState
-      }
+      sock,
+      authState
     );
     
     sock.ev.on(
