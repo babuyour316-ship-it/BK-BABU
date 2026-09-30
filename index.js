@@ -6272,7 +6272,8 @@ sock =
           continue;
         }
 
-        await handleMessage(
+       await handleMessageFromSession(
+          sock,
           message
         );
 
