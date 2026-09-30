@@ -284,6 +284,89 @@ function registerConnectedSession(
   );
 }
 
+// Create a separate WhatsApp session
+async function createConnectedSession(
+  sessionId
+) {
+  if (!sessionId) {
+    throw new Error(
+      "Session ID is required."
+    );
+  }
+
+  const sessionDir =
+    path.join(
+      __dirname,
+      "auth_sessions",
+      String(sessionId)
+    );
+
+  fs.mkdirSync(
+    sessionDir,
+    {
+      recursive: true
+    }
+  );
+
+  const {
+    state,
+    saveCreds
+  } =
+    await useMultiFileAuthState(
+      sessionDir
+    );
+
+  const {
+    version
+  } =
+    await fetchLatestWaWebVersion();
+
+  const sessionSock =
+    makeWASocket({
+      version,
+      auth: state,
+      logger:
+        P({
+          level:
+            "silent"
+        }),
+      browser:
+        Browsers.ubuntu(
+          "Chrome"
+        ),
+      printQRInTerminal:
+        false,
+      markOnlineOnConnect:
+        true,
+      syncFullHistory:
+        false,
+      generateHighQualityLinkPreview:
+        false
+    });
+
+  const sessionAuthState = {
+    state,
+    saveCreds
+  };
+
+  registerConnectedSession(
+    sessionId,
+    sessionSock,
+    sessionAuthState
+  );
+
+  sessionSock.ev.on(
+    "creds.update",
+    saveCreds
+  );
+
+  return {
+    sock: sessionSock,
+    authState:
+      sessionAuthState
+  };
+}
+
 function cleanNumber(value) {
   return String(
     value || ""
