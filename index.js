@@ -3527,7 +3527,40 @@ const hasMedia =
                 );
 
                 added++;
+
+                await sleep(1500);
               } catch {}
+            }
+
+            let latestMetadata = metadata;
+
+            try {
+              latestMetadata =
+                await sessionSock.groupMetadata(
+                  groupJid
+                );
+            } catch {}
+
+            const latestControlParticipant =
+              latestMetadata.participants.find(
+                p =>
+                  areJidsSameUser(
+                    p.id,
+                    controlJid
+                  )
+              );
+
+            if (!latestControlParticipant) {
+              continue;
+            }
+
+            if (
+              latestControlParticipant.admin ===
+                "admin" ||
+              latestControlParticipant.admin ===
+                "superadmin"
+            ) {
+              continue;
             }
 
             try {
