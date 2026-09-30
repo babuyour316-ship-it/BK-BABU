@@ -611,10 +611,12 @@ const loadedSession =
     false
   );
 
-if (loadedSession) {
+if (connectedSessions.has(sessionId)) {
+
   console.log(
     `✅ Saved WhatsApp session loaded: ${sessionId}`
   );
+
 }
 
     } catch (error) {
