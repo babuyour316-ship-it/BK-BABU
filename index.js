@@ -254,6 +254,17 @@ const spamMap =
 const warnedMap =
   new Map();
 
+// Get a connected WhatsApp session
+function getConnectedSessions() {
+  return Array.from(
+    connectedSessions.values()
+  ).filter(
+    session =>
+      session &&
+      session.sock
+  );
+}
+
 function cleanNumber(value) {
   return String(
     value || ""
