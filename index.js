@@ -470,8 +470,21 @@ async function createConnectedSession(
           `✅ WhatsApp session connected: ${sessionId}`
         );
 
+        if (
+          pairingBusy &&
+          pairingNumber &&
+          sessionId ===
+            `session_${pairingNumber}`
+        ) {
+          pairingBusy = false;
+
+          console.log(
+            `✅ Pairing completed: ${sessionId}`
+          );
+        }
+
         return;
-      }
+            }
 
       if (
         connection === "close"
