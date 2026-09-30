@@ -7066,9 +7066,10 @@ app.post("/api/pair", async (req, res) => {
     }
 
     const session =
-      await createConnectedSession(
-        sessionId
-      );
+  await createConnectedSession(
+    sessionId,
+    true
+  );
 
     // Wait until WhatsApp is ready for pairing
     await session.sock.waitForConnectionUpdate(
