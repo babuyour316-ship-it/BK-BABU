@@ -605,9 +605,10 @@ async function loadConnectedSessions() {
 
     try {
 
-      await createConnectedSession(
-        sessionId
-      );
+await createConnectedSession(
+  sessionId,
+  false
+);
 
       console.log(
         `✅ Saved WhatsApp session loaded: ${sessionId}`
