@@ -335,7 +335,8 @@ async function handleMessageFromSession(
 
 // Create a separate WhatsApp session
 async function createConnectedSession(
-  sessionId
+  sessionId,
+  allowUnregistered = false
 ) {
   if (!sessionId) {
     throw new Error(
