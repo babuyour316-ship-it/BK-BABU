@@ -365,6 +365,17 @@ async function createConnectedSession(
     await useMultiFileAuthState(
       sessionDir
     );
+  
+  if (
+  !state?.creds?.registered &&
+  !allowUnregistered
+) {
+  console.log(
+    `⚠️ Skipping unregistered session: ${sessionId}`
+  );
+
+  return null;
+  }
 
   const {
     version
