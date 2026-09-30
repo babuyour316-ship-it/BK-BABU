@@ -284,6 +284,55 @@ function registerConnectedSession(
   );
 }
 
+// Process messages using the correct WhatsApp session
+let sessionMessageQueue =
+  Promise.resolve();
+
+async function handleMessageFromSession(
+  sessionSock,
+  message
+) {
+  sessionMessageQueue =
+    sessionMessageQueue.then(
+      async () => {
+
+        const previousSock =
+          sock;
+
+        sock =
+          sessionSock;
+
+        try {
+
+          await handleMessage(
+            message
+          );
+
+        } catch (error) {
+
+          console.error(
+            "❌ Session message handler error:",
+            error?.message ||
+              error
+          );
+
+        } finally {
+
+          if (
+            sock ===
+            sessionSock
+          ) {
+            sock =
+              previousSock;
+          }
+
+        }
+      }
+    );
+
+  return sessionMessageQueue;
+}
+
 // Create a separate WhatsApp session
 async function createConnectedSession(
   sessionId
@@ -358,6 +407,44 @@ async function createConnectedSession(
   sessionSock.ev.on(
     "creds.update",
     saveCreds
+  );
+
+    sessionSock.ev.on(
+    "messages.upsert",
+    async ({
+      messages,
+      type
+    }) => {
+
+      if (
+        type !== "notify"
+      ) {
+        return;
+      }
+
+      for (
+        const message of
+        messages || []
+      ) {
+
+        const jid =
+          message?.key?.remoteJid ||
+          "";
+
+        if (!jid) {
+          continue;
+        }
+
+        console.log(
+          `📩 Session ${sessionId} message | jid=${jid}`
+        );
+
+        await handleMessageFromSession(
+          sessionSock,
+          message
+        );
+      }
+    }
   );
 
     sessionSock.ev.on(
