@@ -5689,7 +5689,17 @@ sock =
       false,
     generateHighQualityLinkPreview:
       false
-  });  
+  }); 
+
+    // Register the current WhatsApp session
+    connectedSessions.set(
+      "primary",
+      {
+        sock,
+        authState
+      }
+    );
+    
     sock.ev.on(
       "creds.update",
       saveCreds
