@@ -367,6 +367,67 @@ async function createConnectedSession(
   };
 }
 
+// Load all saved WhatsApp sessions
+async function loadConnectedSessions() {
+
+  const sessionsDir =
+    path.join(
+      __dirname,
+      "auth_sessions"
+    );
+
+  if (
+    !fs.existsSync(
+      sessionsDir
+    )
+  ) {
+    return;
+  }
+
+  const entries =
+    fs.readdirSync(
+      sessionsDir,
+      {
+        withFileTypes:
+          true
+      }
+    );
+
+  for (
+    const entry of entries
+  ) {
+
+    if (
+      !entry.isDirectory()
+    ) {
+      continue;
+    }
+
+    const sessionId =
+      entry.name;
+
+    try {
+
+      await createConnectedSession(
+        sessionId
+      );
+
+      console.log(
+        `✅ Saved WhatsApp session loaded: ${sessionId}`
+      );
+
+    } catch (error) {
+
+      console.error(
+        `❌ Failed to load session ${sessionId}:`,
+        error?.message ||
+          error
+      );
+
+    }
+  }
+}
+
 function cleanNumber(value) {
   return String(
     value || ""
