@@ -536,9 +536,18 @@ async function createConnectedSession(
 
         try {
 
-          await createConnectedSession(
-            sessionId
-          );
+          const reconnectedSession =
+            await createConnectedSession(
+              sessionId,
+              true
+            );
+
+          if (!reconnectedSession) {
+            console.log(
+              `⚠️ Session reconnect skipped: ${sessionId}`
+            );
+            return;
+          }
 
           console.log(
             `🔄 Session reconnected: ${sessionId}`
