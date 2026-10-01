@@ -526,12 +526,36 @@ async function createConnectedSession(
             String(sessionId)
           );
 
+          const sessionDir = path.join(
+            __dirname,
+            "auth_sessions",
+            String(sessionId)
+          );
+
+          try {
+            if (fs.existsSync(sessionDir)) {
+              fs.rmSync(sessionDir, {
+                recursive: true,
+                force: true
+              });
+
+              console.log(
+                `🗑️ Removed invalid auth session: ${sessionId}`
+              );
+            }
+          } catch (cleanupError) {
+            console.error(
+              `❌ Failed to remove auth session ${sessionId}:`,
+              cleanupError
+            );
+          }
+
           console.log(
             `❌ Session logged out: ${sessionId}`
           );
 
           return;
-        }
+            }
 
         connectedSessions.delete(
           String(sessionId)
