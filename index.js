@@ -6472,7 +6472,7 @@ sock =
         DisconnectReason.loggedOut
       ) {
 
-        console.log(
+                console.log(
           "WhatsApp session logged out. Resetting auth session for new pairing."
         );
 
@@ -6509,11 +6509,23 @@ sock =
               }
             );
 
+            console.log(
+              "Old WhatsApp auth session deleted."
+            );
+
           }
 
-          console.log(
-            "Old WhatsApp auth session deleted."
+        } catch (
+          resetError
+        ) {
+
+          console.error(
+            "Auth reset error:",
+            resetError?.message ||
+              resetError
           );
+
+        }
 
         } catch (
           resetError
