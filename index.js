@@ -7249,6 +7249,7 @@ app.use((err, req, res, next) => {
 
 });
 
+}
 
 // ------------------------------------------------------------
 // PROCESS ERROR HANDLERS
@@ -7265,7 +7266,6 @@ process.on(
 
   }
 );
-
 
 process.on(
   "unhandledRejection",
