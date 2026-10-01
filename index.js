@@ -285,52 +285,42 @@ function registerConnectedSession(
 }
 
 // Process messages using the correct WhatsApp session
-let sessionMessageQueue =
-  Promise.resolve();
-
 async function handleMessageFromSession(
   sessionSock,
   message
 ) {
-  sessionMessageQueue =
-    sessionMessageQueue.then(
-      async () => {
 
-        const previousSock =
-          sock;
+  const previousSock =
+    sock;
 
-        sock =
-          sessionSock;
+  sock =
+    sessionSock;
 
-        try {
+  try {
 
-          await handleMessage(
-            message
-          );
-
-        } catch (error) {
-
-          console.error(
-            "❌ Session message handler error:",
-            error?.message ||
-              error
-          );
-
-        } finally {
-
-          if (
-            sock ===
-            sessionSock
-          ) {
-            sock =
-              previousSock;
-          }
-
-        }
-      }
+    await handleMessage(
+      message
     );
 
-  return sessionMessageQueue;
+  } catch (error) {
+
+    console.error(
+      "❌ Session message handler error:",
+      error?.message ||
+        error
+    );
+
+  } finally {
+
+    if (
+      sock ===
+      sessionSock
+    ) {
+      sock =
+        previousSock;
+    }
+
+  }
 }
 
 // Create a separate WhatsApp session
