@@ -6088,6 +6088,8 @@ if (isStickerCommand) {
   }
 }
 
+}
+
 async function handleGroupCallUpdate(calls) {
   for (const call of calls || []) {
     try {
@@ -7248,8 +7250,6 @@ app.use((err, req, res, next) => {
   });
 
 });
-
-}
 
 // ------------------------------------------------------------
 // PROCESS ERROR HANDLERS
