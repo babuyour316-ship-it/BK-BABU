@@ -561,6 +561,10 @@ async function createConnectedSession(
           String(sessionId)
         );
 
+        console.log(
+          `🔄 Session disconnected, preparing reconnect: ${sessionId}`
+        );
+
         await sleep(100);
 
         try {
