@@ -512,6 +512,11 @@ async function createConnectedSession(
           `⚠️ WhatsApp session closed: ${sessionId} | ${statusCode || "unknown"}`
         );
 
+        console.error(
+  `❌ Disconnect details for ${sessionId}:`,
+  lastDisconnect?.error
+);
+
         if (
           statusCode ===
           DisconnectReason.loggedOut
