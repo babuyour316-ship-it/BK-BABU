@@ -5973,7 +5973,8 @@ async function handleMessage(
 
   if (
     cfg?.autoread &&
-    msg.key
+    msg.key &&
+    !text.startsWith(PREFIX)
   ) {
     try {
       await sock.readMessages(
