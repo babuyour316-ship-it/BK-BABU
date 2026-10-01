@@ -7124,12 +7124,22 @@ app.post("/api/pair", async (req, res) => {
       });
 
     }
-
-    const session =
+const session =
   await createConnectedSession(
     sessionId,
     true
   );
+
+if (!session || !session.sock) {
+
+  pairingBusy = false;
+
+  throw new Error(
+    "WhatsApp session could not be initialized."
+  );
+
+}
+    
 
       // Wait for the WhatsApp socket to initialize
     // before requesting the pairing code.
