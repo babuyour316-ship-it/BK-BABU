@@ -650,7 +650,7 @@ async function loadConnectedSessions() {
       const loadedSession =
         await createConnectedSession(
           sessionId,
-          false
+          true
         );
 
 if (connectedSessions.has(sessionId)) {
