@@ -565,7 +565,7 @@ async function createConnectedSession(
           `🔄 Session disconnected, preparing reconnect: ${sessionId}`
         );
 
-        await sleep(100);
+      await sleep(1000);
 
         try {
 
