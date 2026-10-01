@@ -4814,6 +4814,7 @@ async function handleGroupProtection(
    * Admin এবং Owner-কে automatic protection
    * থেকে বাদ দেওয়া হচ্ছে।
    */
+
   let senderAdmin =
     isOwner(sender);
 
@@ -4825,6 +4826,12 @@ async function handleGroupProtection(
       );
   }
 
+  if (
+    text &&
+    text.startsWith(PREFIX)
+  ) {
+    return false;
+  }
   if (
     senderAdmin
   ) {
