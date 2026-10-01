@@ -6076,8 +6076,6 @@ if (isStickerCommand) {
 
 }
 
-}
-
   if (
     text.startsWith(
       PREFIX
@@ -6090,6 +6088,8 @@ if (isStickerCommand) {
       text
     );
   }
+
+}
 
 async function handleGroupCallUpdate(calls) {
   for (const call of calls || []) {
