@@ -6017,20 +6017,23 @@ async function handleMessage(
   if (
     isGroup(jid)
   ) {
-    const blockedByProtection =
-      await handleGroupProtection(
-        msg,
-        jid,
-        sender,
-        text
-      );
-
-    if (
-      blockedByProtection
+        if (
+      !text.startsWith(PREFIX)
     ) {
-      return;
-    }
-  }
+      const blockedByProtection =
+        await handleGroupProtection(
+          msg,
+          jid,
+          sender,
+          text
+        );
+
+      if (
+        blockedByProtection
+      ) {
+        return;
+      }
+        }
 
   const isStickerCommand =
   text === `${PREFIX}sticker` ||
