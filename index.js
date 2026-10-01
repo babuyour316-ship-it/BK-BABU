@@ -645,13 +645,13 @@ async function loadConnectedSessions() {
     const sessionId =
       entry.name;
 
-    try {
+      try {
 
-const loadedSession =
-  await createConnectedSession(
-    sessionId,
-    false
-  );
+      const loadedSession =
+        await createConnectedSession(
+          sessionId,
+          true
+        );
 
 if (connectedSessions.has(sessionId)) {
 
