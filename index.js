@@ -4815,6 +4815,13 @@ async function handleGroupProtection(
    * থেকে বাদ দেওয়া হচ্ছে।
    */
 
+    if (
+    text &&
+    text.startsWith(PREFIX)
+  ) {
+    return false;
+  }
+
   let senderAdmin =
     isOwner(sender);
 
@@ -4826,12 +4833,6 @@ async function handleGroupProtection(
       );
   }
 
-  if (
-    text &&
-    text.startsWith(PREFIX)
-  ) {
-    return false;
-  }
   if (
     senderAdmin
   ) {
