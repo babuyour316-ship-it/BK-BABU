@@ -6527,18 +6527,6 @@ sock =
 
         }
 
-        } catch (
-          resetError
-        ) {
-
-          console.error(
-            "Auth reset error:",
-            resetError?.message ||
-              resetError
-          );
-
-        }
-
         await sleep(
           2000
         );
