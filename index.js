@@ -557,6 +557,21 @@ async function createConnectedSession(
           return;
             }
 
+              if (
+          statusCode ===
+          DisconnectReason.connectionReplaced
+        ) {
+          console.log(
+            `⛔ Session conflict detected. Stopping duplicate reconnect: ${sessionId}`
+          );
+
+          connectedSessions.delete(
+            String(sessionId)
+          );
+
+          return;
+        }
+
         connectedSessions.delete(
           String(sessionId)
         );
@@ -565,7 +580,7 @@ async function createConnectedSession(
           `🔄 Session disconnected, preparing reconnect: ${sessionId}`
         );
 
-      await sleep(1000);
+        await sleep(1000);
 
         try {
 
