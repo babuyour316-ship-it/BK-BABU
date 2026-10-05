@@ -4299,18 +4299,6 @@ const hasMedia =
       return;
     }
 
-    const allowed =
-      await safeGroupAdmin(
-        jid,
-        sender,
-        jid,
-        quoted
-      );
-
-    if (!allowed) {
-      return;
-    }
-
     let value;
 
 if (!args[0]) {
