@@ -284,16 +284,26 @@ function registerConnectedSession(
   );
 }
 
-// Process messages using the correct WhatsApp session
-let sessionMessageQueue =
-  Promise.resolve();
+// Process messages separately for each WhatsApp session
+const sessionMessageQueues =
+  new Map();
 
 async function handleMessageFromSession(
   sessionSock,
   message
 ) {
-  sessionMessageQueue =
-    sessionMessageQueue.then(
+  const sessionKey =
+    sessionSock?.user?.id ||
+    sessionSock;
+
+  const previousQueue =
+    sessionMessageQueues.get(
+      sessionKey
+    ) ||
+    Promise.resolve();
+
+  const currentQueue =
+    previousQueue.then(
       async () => {
 
         const previousSock =
@@ -330,7 +340,12 @@ async function handleMessageFromSession(
       }
     );
 
-  return sessionMessageQueue;
+  sessionMessageQueues.set(
+    sessionKey,
+    currentQueue
+  );
+
+  return currentQueue;
 }
 
 // Create a separate WhatsApp session
