@@ -4633,6 +4633,86 @@ if (value === null) {
   }
 
     if (
+    command === "report"
+  ) {
+    if (
+      !(await isBotControlNumber(sender)) &&
+      !isOwner(sender)
+    ) {
+      await reply(
+        jid,
+        "❌ এই কমান্ড শুধু Bot Control Number বা Owner ব্যবহার করতে পারবেন।",
+        quoted
+      );
+      return;
+    }
+
+    const targetNumber =
+      cleanNumber(args[0] || "");
+
+    const reason =
+      args.slice(1).join(" ").trim();
+
+    if (
+      targetNumber.length < 8 ||
+      targetNumber.length > 15
+    ) {
+      await reply(
+        jid,
+        `❌ সঠিক নম্বর দাও।\nউদাহরণ: ${PREFIX}report 919876543210 spam`,
+        quoted
+      );
+      return;
+    }
+
+    if (!reason) {
+      await reply(
+        jid,
+        `❌ অভিযোগের কারণ লিখো।\nউদাহরণ: ${PREFIX}report 919876543210 spam messages`,
+        quoted
+      );
+      return;
+    }
+
+    const alreadyRecorded =
+      reportRecords.some(
+        record =>
+          record.number === targetNumber &&
+          Date.now() - record.timestamp <
+            24 * 60 * 60 * 1000
+      );
+
+    if (alreadyRecorded) {
+      await reply(
+        jid,
+        "ℹ️ এই নম্বরের অভিযোগ গত ২৪ ঘণ্টার মধ্যে রেকর্ড করা হয়েছে।",
+        quoted
+      );
+      return;
+    }
+
+    reportRecords.push({
+      number: targetNumber,
+      reason: reason,
+      timestamp: Date.now(),
+      recordedBy: senderNumber(sender)
+    });
+
+    saveReportRecords();
+
+    await reply(
+      jid,
+      `✅ অভিযোগের রেকর্ড সংরক্ষিত হয়েছে।\n\n` +
+      `📱 নম্বর: ${targetNumber}\n` +
+      `📝 কারণ: ${reason}\n\n` +
+      `⚠️ এটি শুধু রেকর্ড; WhatsApp-এ রিপোর্ট পাঠানো হয়নি।`,
+      quoted
+    );
+
+    return;
+    }
+
+    if (
     command === "block"
   ) {
     
