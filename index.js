@@ -100,6 +100,11 @@ const AUTOSTATUS_FILE = path.join(
   "autostatus.json"
 );
 
+const REPORT_FILE = path.join(
+  DATA_DIR,
+  "report-records.json"
+);
+
 const AUTO_COLOR_SENT = new Set();
 
 fs.mkdirSync(DATA_DIR, {
