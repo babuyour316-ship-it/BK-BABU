@@ -167,6 +167,12 @@ let autoStatus =
     false
   );
 
+let reportRecords =
+  readJson(
+    REPORT_FILE,
+    []
+  );
+
 function saveSettings() {
   writeJson(
     SETTINGS_FILE,
@@ -185,6 +191,13 @@ function saveBlocked() {
   writeJson(
     BLOCK_FILE,
     [...blocked]
+  );
+}
+
+function saveReportRecords() {
+  writeJson(
+    REPORT_FILE,
+    reportRecords
   );
 }
 
